@@ -117,9 +117,22 @@ static const float RANGE_STEPS_KM[] = {10.0f, 20.0f, 30.0f, 50.0f, 100.0f};
 #define WX_RADAR_REFRESH_MS 300000UL       // RainViewer frames update about every 5 minutes
 #define CLOUD_IMAGE_REFRESH_MS 600000UL    // EUMETSAT MTG cloud imagery; cache for 10 minutes
 
-// ---------- Screen (CO5300 AMOLED) ----------
-#define SCREEN_W            466
-#define SCREEN_H            466
+// ---------- Screen ----------
+// ORB_SCREEN_PX is the panel's edge in pixels: 466 for the CO5300 AMOLED Orb (the default),
+// 800 for the Big Orb (Waveshare ESP32-P4 3.4C, JD9365 over MIPI-DSI). It comes from the
+// build env, so one tree builds both.
+//
+// ORB_DESIGN_PX is the size every hand-tuned pixel constant in this firmware was measured
+// against. ORB_PX(v) rescales one of those constants to the panel actually fitted, and is
+// the identity on a 466 Orb, so wrapping a constant never changes the small Orb's output.
+#ifndef ORB_SCREEN_PX
+#define ORB_SCREEN_PX       466
+#endif
+#define ORB_DESIGN_PX       466
+#define ORB_PX(v)           ((int)((v) * ORB_SCREEN_PX / (float)ORB_DESIGN_PX + ((v) < 0 ? -0.5f : 0.5f)))
+#define ORB_PXF(v)          ((float)(v) * ORB_SCREEN_PX / (float)ORB_DESIGN_PX)
+#define SCREEN_W            ORB_SCREEN_PX
+#define SCREEN_H            ORB_SCREEN_PX
 // KNOWN, MEASURED, AND DELIBERATELY LEFT ALONE (2026-10-04).
 //
 // 466 is an even number, so the panel has no exact centre pixel: true centre is 232.5 and
@@ -141,9 +154,9 @@ static const float RANGE_STEPS_KM[] = {10.0f, 20.0f, 30.0f, 50.0f, 100.0f};
 // Zion's call: leave it, revisit if it bothers anybody else. Changing it means moving the
 // centre every screen in this firmware is built around, for a sub-pixel gain. The matching
 // half pixel on the Studio side is noted at the pivot default in studio.tsx.
-#define SCREEN_CX           233
-#define SCREEN_CY           233
-#define RADAR_R_OUTER_PX    218            // outer ring radius in pixels
+#define SCREEN_CX           (ORB_SCREEN_PX / 2)      // 233 on the Orb, 400 on the Big Orb
+#define SCREEN_CY           (ORB_SCREEN_PX / 2)
+#define RADAR_R_OUTER_PX    ORB_PX(218)              // outer ring radius in pixels
 #define LV_COLOR_DEPTH_BITS 16
 #define LCD_COL_OFFSET      6              // CO5300 column (x) gap on this panel (esp_lcd set_gap 0x06)
 #define LCD_ROW_OFFSET      0              // no row (y) gap
@@ -281,6 +294,71 @@ static const float RANGE_STEPS_KM[] = {10.0f, 20.0f, 30.0f, 50.0f, 100.0f};
 // ---------- Debug ----------
 #define DEBUG_MEM           0               // 1 = print a [mem] heap/fps line every 5s on serial
 
+// ---------- Board ----------
+// ORB_BOARD_P4_34C: the Big Orb, Waveshare ESP32-P4-WIFI6-Touch-LCD-3.4C. Set by its build env.
+// Otherwise: the Orb, Waveshare ESP32-S3-Touch-AMOLED-1.75 (the default, unchanged).
+//
+// ORB_HAS_* say which parts a board actually carries, so the code that drives a part the
+// board lacks compiles to a stub instead of probing an I2C address nobody answers at.
+#if defined(ORB_BOARD_P4_34C)
+
+#define ORB_HAS_PMIC        0   // no AXP2101: a DC-DC regulator, no battery gauge
+#define ORB_HAS_IMU         0   // no QMI8658: no motion wake, no auto-rotate
+#define ORB_HAS_RTC_CHIP    0   // no PCF85063: time comes from NTP (the P4's VBAT keeps nothing we read)
+#define ORB_HAS_GPS         0
+#define ORB_HAS_KNOB        0   // no encoder fitted; touch stands in for it (knob_touch.cpp)
+#define ORB_HAS_TOUCH_KNOB  1
+
+// Display: JD9365 800x800 IPS over 2-lane MIPI-DSI, timings from Waveshare's
+// examples/arduino/libraries/displays/displays_config.h (SCREEN_3INCH_4_DSI).
+#define PIN_LCD_RST         27
+#define PIN_LCD_BL          26             // backlight PWM (LEDC), active high
+#define LCD_DSI_HSYNC_PW    20
+#define LCD_DSI_HSYNC_BP    20
+#define LCD_DSI_HSYNC_FP    40
+#define LCD_DSI_VSYNC_PW    4
+#define LCD_DSI_VSYNC_BP    12
+#define LCD_DSI_VSYNC_FP    24
+#define LCD_DSI_DPI_HZ      80000000
+#define LCD_DSI_LANE_MBPS   1500
+
+// Shared I2C bus: touch, audio codec.
+#define PIN_I2C_SDA         7
+#define PIN_I2C_SCL         8
+
+// Touch: GT9271 (GT911 protocol). INT is not routed to the P4 and RST is left alone, as in
+// Waveshare's own BSP, so the controller is polled at whichever address it answers.
+#define I2C_ADDR_TOUCH      0x5D
+#define I2C_ADDR_TOUCH_ALT  0x14
+
+// ES8311 codec over I2S, ES7210 mic ADC, NS4150B amp.
+#define PIN_I2S_MCLK        13
+#define PIN_I2S_BCLK        12
+#define PIN_I2S_LRCLK       10
+#define PIN_I2S_DOUT        9              // P4 -> codec (speaker)
+#define PIN_I2S_DIN         11             // codec -> P4 (mics)
+#define PIN_AUDIO_PA        53             // speaker amp enable, active high
+#define PIN_BOOT_BUTTON     35             // P4 BOOT strap. NOT YET CONFIRMED on this board.
+
+// microSD, driven in SPI mode on the SDMMC socket's own lines (CMD=MOSI, CLK=SCK,
+// D0=MISO, D3=CS) so every SD.open() in the tree works unchanged. The socket is powered
+// from the P4's internal LDO channel 4, which has to be switched on first.
+#define SD_PIN_MOSI         44
+#define SD_PIN_SCK          43
+#define SD_PIN_MISO         39
+#define SD_PIN_CS           42
+#define SD_LDO_CHANNEL      4
+#define SD_LDO_MV           3300
+
+#else  // the Orb: ESP32-S3-Touch-AMOLED-1.75
+
+#define ORB_HAS_PMIC        1
+#define ORB_HAS_IMU         1
+#define ORB_HAS_RTC_CHIP    1
+#define ORB_HAS_GPS         1
+#define ORB_HAS_KNOB        1
+#define ORB_HAS_TOUCH_KNOB  0
+
 // ---------- Pin map ----------
 // VERIFIED (ESPHome def, cross-checked against the Waveshare board definition in
 // xiaozhi-esp32 and a working Arduino_GFX port for this exact panel):
@@ -317,7 +395,16 @@ static const float RANGE_STEPS_KM[] = {10.0f, 20.0f, 30.0f, 50.0f, 100.0f};
 #define I2C_ADDR_RTC        0x51
 #define I2C_ADDR_PMIC       0x34
 
+// microSD in SPI mode. See sdcard.cpp for why it is not SD_MMC on this board.
+#define SD_PIN_MOSI         1
+#define SD_PIN_SCK          2
+#define SD_PIN_MISO         3
+#define SD_PIN_CS           41
+
 // Safety net: should never fire now that pins are filled in. Keeps future edits honest.
 #if (PIN_LCD_SCLK < 0) || (PIN_I2C_SDA < 0)
 #  error "config.h: QSPI/I2C pins are back to placeholders (-1). Restore the real values."
 #endif
+
+#endif  // board
+

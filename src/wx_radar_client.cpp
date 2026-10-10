@@ -190,7 +190,7 @@ bool wx_plate_have() { return s_plateHave && s_plateCrop != nullptr; }
 static bool wx_in_zone(int bx, int by) {
     const theme_style::Weather &w = theme_style::weather();
     if (w.zoneCount <= 0) return false;
-    const int x = bx + (466 - WX_RADAR_SIZE) / 2;
+    const int x = bx + (SCREEN_W - WX_RADAR_SIZE) / 2;
     const int y = by + 52;
     bool anyInvert = false, insideInvert = false;
     for (int i = 0; i < w.zoneCount; ++i) {

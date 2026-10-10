@@ -1,4 +1,5 @@
 #include "sdcard.h"
+#include "config.h"   // SD_PIN_*: per board
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
@@ -7,12 +8,14 @@
 // microSD naming) but wires only the four SPI-mode lines to the ESP32: CMD->MOSI,
 // CLK->SCK, D0->MISO, D3->CS (D1/D2/card-detect are not connected). So this is a plain
 // SPI card, not SD_MMC, even though the silkscreen uses SD_MMC-style pin names.
-static constexpr int SD_PIN_MOSI = 1;
-static constexpr int SD_PIN_SCK  = 2;
-static constexpr int SD_PIN_MISO = 3;
-static constexpr int SD_PIN_CS   = 41;
-
+// The pins live in config.h, per board. The Big Orb drives its SDMMC socket the same way,
+// in SPI mode, so this file and every SD.open() in the tree stay board-agnostic.
+#if defined(ORB_BOARD_P4_34C)
+#include "esp_ldo_regulator.h"
+static SPIClass  s_sdSpi(FSPI);
+#else
 static SPIClass  s_sdSpi(HSPI);
+#endif
 static bool      s_mounted   = false;
 static uint64_t  s_sizeBytes = 0;
 
@@ -35,6 +38,21 @@ static constexpr uint32_t SD_SPI_HZ = 20000000;
 static constexpr uint32_t SD_SPI_TRY[] = { SD_SPI_HZ, 10000000, 4000000 };
 
 bool sdcard::begin() {
+#if defined(ORB_BOARD_P4_34C)
+    // The socket's supply is the P4's internal LDO channel 4, off until someone asks for it.
+    // Held for the life of the device: the card is never unpowered on purpose.
+    static esp_ldo_channel_handle_t s_ldo = nullptr;
+    if (!s_ldo) {
+        esp_ldo_channel_config_t ldo = {};
+        ldo.chan_id    = SD_LDO_CHANNEL;
+        ldo.voltage_mv = SD_LDO_MV;
+        if (esp_ldo_acquire_channel(&ldo, &s_ldo) != ESP_OK) {
+            Serial.println("[sd] could not power the card (LDO channel 4)");
+            s_ldo = nullptr;
+        }
+        delay(10);   // let the rail settle before the card sees a clock
+    }
+#endif
     s_sdSpi.begin(SD_PIN_SCK, SD_PIN_MISO, SD_PIN_MOSI, SD_PIN_CS);
     bool up = false;
     uint32_t hz = 0;

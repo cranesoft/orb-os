@@ -354,8 +354,8 @@ static void sdl_mouse_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     if (g_composite) {
         const float dx = x - g_scx, dy = y - g_scy;
         if (sqrtf(dx * dx + dy * dy) <= g_sr && g_sr > 0) {
-            data->point.x = (lv_coord_t)lroundf(233.0f + (dx / g_sr) * 233.0f);
-            data->point.y = (lv_coord_t)lroundf(233.0f + (dy / g_sr) * 233.0f);
+            data->point.x = (lv_coord_t)lroundf((float)SCREEN_CX + (dx / g_sr) * (float)SCREEN_CX);
+            data->point.y = (lv_coord_t)lroundf((float)SCREEN_CY + (dy / g_sr) * (float)SCREEN_CY);
             data->state = down ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
         } else {
             data->state = LV_INDEV_STATE_RELEASED;

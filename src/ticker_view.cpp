@@ -1,3 +1,4 @@
+#include "font_ladder.h"   // font_rung(): a theme size in panel px -> compiled rung
 #include "ticker_view.h"
 #include "ticker.h"
 #include "theme_style.h"
@@ -76,7 +77,7 @@ const lv_font_t *size_font(int px) {
     // rather than outlines, so a size this binary was not built with cannot be drawn at any
     // quality; asking for one and getting the nearest is how a theme silently redesigns
     // itself. Unknown values land on the default rather than the closest.
-    switch (px) {
+    switch (font_rung(px)) {   // panel px -> rung: identity on the 466 Orb
         case 12: return &lv_font_montserrat_12;
         case 14: return &lv_font_montserrat_14;
         case 16: return &lv_font_montserrat_16;

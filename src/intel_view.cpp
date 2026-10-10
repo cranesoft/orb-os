@@ -60,13 +60,13 @@ namespace {
 // middle keeps the box and a row near the top or bottom narrows to match the glass
 // actually under it.
 // SCREEN_W (466) comes from config.h, the same macro every other view measures against.
-constexpr int MIN_ROW_W    = 60;   // never wrap narrower than this, whatever box and chord say
-constexpr int TITLE_Y      = -168; // the fixed layout's title spot, kept as the default
-constexpr int FIRST_ROW_Y  = -74;
-constexpr int ROW_STEP_5   = 52;   // five headlines: tighter, smaller type (automatic mode)
-constexpr int ROW_STEP_3   = 74;   // three headlines: room for two wrapped lines each
-constexpr int AGE_Y        = 176;
-constexpr int ROW_GAP      = 10;   // explicit-size mode: air between headline blocks
+constexpr int MIN_ROW_W    = ORB_PX(60);   // never wrap narrower than this, whatever box and chord say
+constexpr int TITLE_Y      = ORB_PX(-168); // the fixed layout's title spot, kept as the default
+constexpr int FIRST_ROW_Y  = ORB_PX(-74);
+constexpr int ROW_STEP_5   = ORB_PX(52);   // five headlines: tighter, smaller type (automatic mode)
+constexpr int ROW_STEP_3   = ORB_PX(74);   // three headlines: room for two wrapped lines each
+constexpr int AGE_Y        = ORB_PX(176);
+constexpr int ROW_GAP      = ORB_PX(10);   // explicit-size mode: air between headline blocks
 // The "there is more" mark: one small chevron, just past the end of the list.
 //
 // Two earlier attempts are worth remembering. A column of dots beside the headlines read
@@ -81,9 +81,9 @@ constexpr int ROW_GAP      = 10;   // explicit-size mode: air between headline b
 // says "there is more below" at rest says "you can go back up" once you are moving. Nothing
 // else is needed: with at most five items, which way you can go is the whole story, and a
 // dot per item was answering a question nobody asked.
-constexpr int CHEV_W       = 15;   // px across
-constexpr int CHEV_H       = 5;    // px deep
-constexpr int CHEV_GAP     = 9;    // px between the list and the mark
+constexpr int CHEV_W       = ORB_PX(15);   // px across
+constexpr int CHEV_H       = ORB_PX(5);    // px deep
+constexpr int CHEV_GAP     = ORB_PX(9);    // px between the list and the mark
 constexpr uint32_t SCROLL_IDLE_MS = 6000;  // scroll mode lets go after this much stillness
 // A headline too long for its rows fades out instead of ending in an ellipsis, and the
 // fade runs off the RIGHT END OF THE LAST LINE, not along its underside.
@@ -310,8 +310,8 @@ lv_obj_t *s_briefBack     = nullptr;   // the button: a bar in the highlight ban
 lv_obj_t *s_briefBackLbl  = nullptr;   // "Back", in the credit's face
 lv_obj_t *s_briefBackChev = nullptr;   // a chevron pointing the way out, drawn like the others
 lv_point_t s_backChevPts[3] = { {CHEV_H, 0}, {0, CHEV_W / 2}, {CHEV_H, CHEV_W} };
-constexpr int BACK_GAP     = 8;    // between the story's clip and the button
-constexpr int BACK_CHEV_TO_TEXT = 8;   // between the chevron and the word
+constexpr int BACK_GAP     = ORB_PX(8);    // between the story's clip and the button
+constexpr int BACK_CHEV_TO_TEXT = ORB_PX(8);   // between the chevron and the word
 bool     s_briefOpen      = false;
 int      s_briefScroll    = 0;
 int      s_briefMaxScroll = 0;
@@ -321,7 +321,7 @@ int      s_briefMaxScroll = 0;
 // copies of this arithmetic is how a briefing starts landing somewhere the headlines never
 // were, so there is one and render() owns it.
 struct BriefBand { int top; int bottom; int w; int cx; };
-BriefBand s_band = { -110, 110, 320, 0 };
+BriefBand s_band = { ORB_PX(-110), ORB_PX(110), ORB_PX(320), 0 };
 void render_brief();
 
 void show(lv_obj_t *o, bool on) {
@@ -371,7 +371,7 @@ void style_chevrons(int count, int lastRowBottom, int firstRowTop, int cxLast, i
             const theme_style::Intel &cfg = theme_style::intel();
             lv_obj_set_style_line_color(s_chevDown, c_source(), 0);
             // THEME_CAPS 50: where the theme put it, else under the last row shown.
-            if (cfg.morePlace) lv_obj_align(s_chevDown, LV_ALIGN_CENTER, cfg.moreX - 233, cfg.moreY - 233);
+            if (cfg.morePlace) lv_obj_align(s_chevDown, LV_ALIGN_CENTER, cfg.moreX - SCREEN_CX, cfg.moreY - SCREEN_CY);
             else               lv_obj_align(s_chevDown, LV_ALIGN_CENTER, cxLast, lastRowBottom + CHEV_GAP);
         }
     }
@@ -461,7 +461,7 @@ void render() {
     if (autoSize) {
         s_visible   = total;
         step        = total > 3 ? ROW_STEP_5 : ROW_STEP_3;
-        firstCenter = total > 3 ? FIRST_ROW_Y - 16
+        firstCenter = total > 3 ? FIRST_ROW_Y - ORB_PX(16)
                                 : FIRST_ROW_Y + ((3 - total) * step) / 2;
     } else {
         const int titleH  = lv_font_get_line_height(slot_font(0, cfg.titleSize));
@@ -474,12 +474,12 @@ void render() {
         // Following the moved lines meant that dragging the updated line down pushed every
         // headline after it, which is not what moving a line means; the margins above are
         // the control for the band, and a line moved into the band is the designer's call.
-        const int topB    = cfg.marginTop > 0    ? cfg.marginTop - 233
-                          : cfg.titleShow        ? (65 - 233) + titleH / 2 + 8
-                                                 : -180;
-        const int botB    = cfg.marginBottom > 0 ? 233 - cfg.marginBottom
-                          : cfg.ageShow          ? (409 - 233) - ageH / 2 - 6
-                                                 :  180;
+        const int topB    = cfg.marginTop > 0    ? cfg.marginTop - SCREEN_CY
+                          : cfg.titleShow        ? (ORB_PX(65) - SCREEN_CY) + titleH / 2 + ORB_PX(8)
+                                                 : ORB_PX(-180);
+        const int botB    = cfg.marginBottom > 0 ? SCREEN_CY - cfg.marginBottom
+                          : cfg.ageShow          ? (ORB_PX(409) - SCREEN_CY) - ageH / 2 - ORB_PX(6)
+                                                 :  ORB_PX(180);
         step = blockH + ROW_GAP;
         const int avail = botB - topB;
         s_visible = avail >= blockH ? (avail + ROW_GAP) / step : 1;
@@ -690,7 +690,7 @@ void render() {
 // which this screen already installs with a full glyph range. It could not use the title's
 // face in any event: that one is subsetted to the title's own letters, and a brief is
 // arbitrary feed text.
-constexpr int BRIEF_STEP_PX = 22;   // one detent's worth of scroll through a long brief
+constexpr int BRIEF_STEP_PX = ORB_PX(22);   // one detent's worth of scroll through a long brief
 
 // The story's face. THEME_CAPS 49: its own file when the theme shipped one, else the
 // compiled ladder at the theme's briefSize, else the credit's face and size, which is what
@@ -789,7 +789,7 @@ void render_brief() {
         lv_obj_align(s_briefBackChev, LV_ALIGN_LEFT_MID, padX, 0);
         lv_obj_align(s_briefBackLbl,  LV_ALIGN_LEFT_MID, padX + CHEV_H + BACK_CHEV_TO_TEXT, 0);
         if (cfg.backPlace) {
-            lv_obj_align(s_briefBack, LV_ALIGN_CENTER, cfg.backX - 233, cfg.backY - 233);
+            lv_obj_align(s_briefBack, LV_ALIGN_CENTER, cfg.backX - SCREEN_CX, cfg.backY - SCREEN_CY);
         } else {
             // The foot of the band, on the edge the headlines line up on.
             const int cx = cfg.textAlign == theme_style::Intel::ALIGN_LEFT  ? s_band.cx - s_band.w / 2 + w / 2
@@ -876,7 +876,7 @@ void render_brief() {
         show(s_chevDown, more);
         if (more) {
             lv_obj_set_style_line_color(s_chevDown, c_source(), 0);
-            if (cfg.briefMorePlace) lv_obj_align(s_chevDown, LV_ALIGN_CENTER, cfg.briefMoreX - 233, cfg.briefMoreY - 233);
+            if (cfg.briefMorePlace) lv_obj_align(s_chevDown, LV_ALIGN_CENTER, cfg.briefMoreX - SCREEN_CX, cfg.briefMoreY - SCREEN_CY);
             else lv_obj_align(s_chevDown, LV_ALIGN_CENTER, s_band.cx, s_band.top + h + CHEV_GAP + CHEV_H / 2);
         }
     }
@@ -1222,8 +1222,8 @@ void intelview::init() {
     lv_obj_set_style_text_font(s_title, slot_font(0, cfg.titleSize), 0);
     // Letter-spaced, because a short word in small caps at the top of a dial reads as a
     // label rather than as another headline.
-    lv_obj_set_style_text_letter_space(s_title, 4, 0);
-    lv_obj_align(s_title, LV_ALIGN_CENTER, cfg.titleX - 233, cfg.titleY - 233);
+    lv_obj_set_style_text_letter_space(s_title, ORB_PX(4), 0);
+    lv_obj_align(s_title, LV_ALIGN_CENTER, cfg.titleX - SCREEN_CX, cfg.titleY - SCREEN_CY);
     show(s_title, cfg.titleShow);
 
     s_block = lv_obj_create(s_screen);
@@ -1301,7 +1301,7 @@ void intelview::init() {
     show(s_briefBack, false);
     s_briefBackChev = lv_line_create(s_briefBack);
     lv_line_set_points(s_briefBackChev, s_backChevPts, 3);
-    lv_obj_set_style_line_width(s_briefBackChev, 2, 0);
+    lv_obj_set_style_line_width(s_briefBackChev, ORB_PX(2), 0);
     lv_obj_set_style_line_rounded(s_briefBackChev, true, 0);
     s_briefBackLbl = lv_label_create(s_briefBack);
     lv_label_set_text(s_briefBackLbl, "Back");
@@ -1312,7 +1312,7 @@ void intelview::init() {
         lv_obj_t *c = lv_line_create(s_screen);
         (k == 0 ? s_chevDown : s_chevUp) = c;
         lv_line_set_points(c, k == 0 ? s_chevDownPts : s_chevUpPts, 3);
-        lv_obj_set_style_line_width(c, 2, 0);
+        lv_obj_set_style_line_width(c, ORB_PX(2), 0);
         lv_obj_set_style_line_rounded(c, true, 0);
         lv_obj_set_style_line_color(c, c_source(), 0);
         show(c, false);
@@ -1348,8 +1348,8 @@ void intelview::init() {
                 lv_obj_set_style_text_opa(g, (lv_opa_t)(90 / ri), 0);   // fainter further out
                 lv_label_set_text(g, "");
                 lv_obj_align(g, LV_ALIGN_CENTER,
-                             cfg.ageX - 233 + (int)lroundf(dirs[di][0] * r),
-                             cfg.ageY - 233 + (int)lroundf(dirs[di][1] * r));
+                             cfg.ageX - SCREEN_CX + (int)lroundf(dirs[di][0] * r),
+                             cfg.ageY - SCREEN_CY + (int)lroundf(dirs[di][1] * r));
                 show(g, cfg.ageShow && cfg.ageGlow > 0);
             }
         }
@@ -1364,11 +1364,11 @@ void intelview::init() {
     lv_obj_set_style_bg_color(s_age, lv_color_hex(cfg.ageBg), 0);
     lv_obj_set_style_bg_opa(s_age, (lv_opa_t)cfg.ageBgOpa, 0);
     lv_obj_set_style_radius(s_age, (lv_coord_t)cfg.ageRadius, 0);
-    lv_obj_set_style_pad_hor(s_age, 8, 0);
-    lv_obj_set_style_pad_ver(s_age, 2, 0);
+    lv_obj_set_style_pad_hor(s_age, ORB_PX(8), 0);
+    lv_obj_set_style_pad_ver(s_age, ORB_PX(2), 0);
     lv_obj_set_style_text_font(s_age, slot_font(3, cfg.ageSize), 0);
     lv_label_set_text(s_age, "");
-    lv_obj_align(s_age, LV_ALIGN_CENTER, cfg.ageX - 233, cfg.ageY - 233);
+    lv_obj_align(s_age, LV_ALIGN_CENTER, cfg.ageX - SCREEN_CX, cfg.ageY - SCREEN_CY);
     show(s_age, cfg.ageShow);
 
     attach_art();

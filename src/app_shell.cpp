@@ -1,4 +1,5 @@
 #include "app_shell.h"
+#include "orb_words.h"   // orb_ui(): knob words become touch words on the Big Orb
 #include "display.h"   // markInput — click-to-pixels timing
 #ifdef ARDUINO
 #include <Arduino.h>
@@ -511,13 +512,13 @@ void app_shell::begin() {
     s_overlayLabel = lv_label_create(s_overlay);
     lv_obj_set_style_text_color(s_overlayLabel, pal.ink, 0);
     lv_obj_set_style_text_font(s_overlayLabel, &lv_font_montserrat_48, 0);
-    lv_obj_align(s_overlayLabel, LV_ALIGN_CENTER, 0, -12);
+    lv_obj_align(s_overlayLabel, LV_ALIGN_CENTER, 0, ORB_PX(-12));
 
     s_overlayHint = lv_label_create(s_overlay);
-    lv_label_set_text(s_overlayHint, "push to open");
+    lv_label_set_text(s_overlayHint, orb_ui("push to open"));
     lv_obj_set_style_text_color(s_overlayHint, pal.dim, 0);
     lv_obj_set_style_text_font(s_overlayHint, &lv_font_montserrat_16, 0);
-    lv_obj_align(s_overlayHint, LV_ALIGN_CENTER, 0, 40);
+    lv_obj_align(s_overlayHint, LV_ALIGN_CENTER, 0, ORB_PX(40));
 
 #if CUSTOM_HAS_MENU
     // A custom design replaces the plain name+hint with its own current/prev/next

@@ -1,0 +1,16 @@
+# Big Orb (ESP32-P4, 32 MB flash): the 16 MB Orb table, stretched.
+#
+# Same shape and the same reasons as partitions_16MB_themeart.csv: one app slot, nvs at the
+# stock offset and size, everything else handed to pre-baked RGB565 theme art. Two numbers
+# change because the panel is 800 px:
+#
+#   app0 10 MB   the firmware links a second Montserrat ladder drawn 1.7x larger
+#                (src/bigorb_fonts), which the 6.25 MB slot cannot hold beside ~5.5 MB.
+#   themeart     800x800 art is 2.95x the bytes of 466x466, so one rich theme is ~11 MB
+#                rather than ~3.8. 21.9 MB keeps two complete themes resident.
+#
+# Name,   Type, SubType, Offset,   Size, Flags
+nvs,      data, nvs,     0x9000,   0x5000,
+app0,     app,  factory, 0x10000,  0xA00000,
+themeart, data, 0x40,    0xA10000, 0x15E0000,
+coredump, data, coredump,0x1FF0000,0x10000,

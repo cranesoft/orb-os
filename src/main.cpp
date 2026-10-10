@@ -2697,9 +2697,11 @@ void setup() {
     sdcard::begin();
     psram_mark("after sdcard");
 
+#if !defined(ORB_BOARD_P4_34C)   // the DSI panel has no SCLK pin to forget
     if (PIN_LCD_SCLK < 0 || PIN_I2C_SDA < 0) {
         Serial.println("[!] Pins in config.h are still -1. Copy them from the Waveshare demo.");
     }
+#endif
     Serial.printf("PSRAM: %u bytes free\n", (unsigned)ESP.getFreePsram());
 
     // Reserve the roads projection buffers now, while PSRAM is fresh — by the time

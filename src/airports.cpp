@@ -1,6 +1,7 @@
 #include "airports.h"
 #include "airports_data.h"
 #include "geo.h"
+#include "config.h"
 #include <vector>
 #include <math.h>
 #include <string.h>
@@ -43,7 +44,7 @@ void airports_draw(lv_draw_ctx_t *ctx, lv_color_t color, lv_opa_t opa) {
 
     lv_draw_arc_dsc_t ring;
     lv_draw_arc_dsc_init(&ring);
-    ring.color = color; ring.width = 2; ring.opa = opa;
+    ring.color = color; ring.width = ORB_PX(2); ring.opa = opa;
 
     lv_draw_rect_dsc_t dot;
     lv_draw_rect_dsc_init(&dot);
@@ -55,10 +56,10 @@ void airports_draw(lv_draw_ctx_t *ctx, lv_color_t color, lv_opa_t opa) {
 
     for (const Apt &ap : s_apts) {
         if (ap.large) {
-            lv_draw_arc(ctx, &ring, &ap.pos, 3, 0, 360);                    // small hollow ring
+            lv_draw_arc(ctx, &ring, &ap.pos, ORB_PX(3), 0, 360);                    // small hollow ring
             if (ap.iata[0]) {
-                lv_area_t la = { (lv_coord_t)(ap.pos.x + 5), (lv_coord_t)(ap.pos.y - 7),
-                                 (lv_coord_t)(ap.pos.x + 44), (lv_coord_t)(ap.pos.y + 7) };
+                lv_area_t la = { (lv_coord_t)(ap.pos.x + ORB_PX(5)), (lv_coord_t)(ap.pos.y - ORB_PX(7)),
+                                 (lv_coord_t)(ap.pos.x + ORB_PX(44)), (lv_coord_t)(ap.pos.y + ORB_PX(7)) };
                 lv_draw_label(ctx, &lbl, &la, ap.iata, NULL);
             }
         } else {

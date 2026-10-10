@@ -1,4 +1,5 @@
 #include "update_ui.h"
+#include "orb_words.h"   // orb_ui(): knob words become touch words on the Big Orb
 #include <string.h>   // strcmp, for the _installed sentinel below
 #include "ui.h"   // ui_splash_status(): during boot the splash narrates, not an overlay
 // main.cpp. True while any update surface is up: the screen goes to full brightness no
@@ -6,6 +7,7 @@
 // normal level when the surface goes down. See ensure() / destroy().
 extern void host_update_bright(bool on);
 #include <lvgl.h>
+#include "config.h"
 #include <stdio.h>
 #ifdef ARDUINO
 #include <Arduino.h>
@@ -66,20 +68,20 @@ void ensure() {
     lv_label_set_text(s_title, "Updating theme");
     lv_obj_set_style_text_color(s_title, lv_color_white(), 0);
     lv_obj_set_style_text_font(s_title, &lv_font_montserrat_28, 0);
-    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, -40);
+    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, ORB_PX(-40));
 
     s_sub = lv_label_create(s_panel);
     lv_label_set_text(s_sub, "");
     lv_obj_set_style_text_color(s_sub, lv_color_hex(0x9aa4b0), 0);
     lv_obj_set_style_text_font(s_sub, &lv_font_montserrat_16, 0);
     lv_obj_set_style_text_align(s_sub, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_sub, LV_ALIGN_CENTER, 0, 6);
+    lv_obj_align(s_sub, LV_ALIGN_CENTER, 0, ORB_PX(6));
 
     s_hint = lv_label_create(s_panel);
     lv_label_set_text(s_hint, "Keep power connected. Do not unplug.");
     lv_obj_set_style_text_color(s_hint, lv_color_hex(0x5a636e), 0);
     lv_obj_set_style_text_font(s_hint, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_hint, LV_ALIGN_CENTER, 0, 60);
+    lv_obj_align(s_hint, LV_ALIGN_CENTER, 0, ORB_PX(60));
 }
 
 void destroy() {
@@ -262,10 +264,10 @@ void booting(const char *what) {
     s_lastActivity = millis();
     lv_label_set_text(s_title, "Starting up");
     lv_label_set_text(s_sub, what ? what : "");
-    lv_label_set_text(s_hint, "The knob will not answer until this clears.");
-    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, -60);
+    lv_label_set_text(s_hint, orb_ui("The knob will not answer until this clears."));
+    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, ORB_PX(-60));
     lv_obj_align(s_sub,   LV_ALIGN_CENTER, 0,   0);
-    lv_obj_align(s_hint,  LV_ALIGN_CENTER, 0,  60);
+    lv_obj_align(s_hint,  LV_ALIGN_CENTER, 0,  ORB_PX(60));
     // Paint NOW. The whole reason this exists is that the caller is about to block for
     // twenty seconds without servicing LVGL, so a queued repaint would never be drawn.
     lv_refr_now(NULL);
@@ -314,12 +316,12 @@ void ready(bool needsAck) {
         : "");
     // Names the turn rather than the press, because a turn is the smaller motion and both
     // work. Shorter than the string it replaced, so the two-line layout below is unchanged.
-    lv_label_set_text(s_hint, needsAck ? "Turn the knob to begin." : "");
+    lv_label_set_text(s_hint, orb_ui(needsAck ? "Turn the knob to begin." : ""));
     // Checked with `program --readyshot`. One line at 398 px was most of the dial's width
     // and the bezel crowds it; two shorter lines sit comfortably inside the glass.
-    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, needsAck ? -62 : 0);
-    lv_obj_align(s_sub,   LV_ALIGN_CENTER, 0,   6);
-    lv_obj_align(s_hint,  LV_ALIGN_CENTER, 0,  78);
+    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, needsAck ? ORB_PX(-62) : 0);
+    lv_obj_align(s_sub,   LV_ALIGN_CENTER, 0,   ORB_PX(6));
+    lv_obj_align(s_hint,  LV_ALIGN_CENTER, 0,  ORB_PX(78));
     if (s_autoClear) { lv_timer_del(s_autoClear); s_autoClear = nullptr; }
     if (!needsAck) {
         // Long enough to read, short enough that nobody waits on it. An ordinary power-on
@@ -373,9 +375,9 @@ void firmware_incoming() {
     // in both directions, closing the gap under the title to almost nothing. Checked with
     // `program --updateshot`, which exists precisely because three labels at fixed offsets is
     // the layout that silently collides the moment one of them gains a line.
-    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, -78);
-    lv_obj_align(s_sub,   LV_ALIGN_CENTER, 0,   2);
-    lv_obj_align(s_hint,  LV_ALIGN_CENTER, 0,  78);
+    lv_obj_align(s_title, LV_ALIGN_CENTER, 0, ORB_PX(-78));
+    lv_obj_align(s_sub,   LV_ALIGN_CENTER, 0,   ORB_PX(2));
+    lv_obj_align(s_hint,  LV_ALIGN_CENTER, 0,  ORB_PX(78));
     if (!s_timer) s_timer = lv_timer_create(watchdog_cb, 1000, nullptr);
     // The entire point of this function, and the one line that cannot be dropped. Everything
     // above only queues a repaint; the chip is moments from being reset into its bootloader,

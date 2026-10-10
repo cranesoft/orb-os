@@ -1,3 +1,4 @@
+#include "font_ladder.h"   // font_rung(): a theme size in panel px -> compiled rung
 #include "wind_notice.h"
 
 #include "clock_wind.h"
@@ -151,7 +152,7 @@ namespace {
 // asking for one and getting the nearest is how a theme silently redesigns itself. Same
 // switch ticker_view.cpp uses, and unknown values land on a default rather than the closest.
 const lv_font_t *font_for_px(int px) {
-    switch (px) {
+    switch (font_rung(px)) {   // panel px -> rung: identity on the 466 Orb
         case 14: return &lv_font_montserrat_14;
         case 16: return &lv_font_montserrat_16;
         case 18: return &lv_font_montserrat_18;
@@ -174,7 +175,7 @@ lv_obj_t *line(lv_obj_t *parent, const char *text, int px, uint32_t color, int y
                int ml, int mr, int slot, int opa) {
     lv_obj_t *l = lv_label_create(parent);
     const int band = SCREEN_W - ml - mr;
-    if (band > 20) {
+    if (band > ORB_PX(20)) {
         lv_label_set_long_mode(l, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(l, band);
     }

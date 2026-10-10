@@ -1,3 +1,4 @@
+#include "config.h"   // ORB_SCREEN_PX
 #include "theme_art.h"
 #include <string.h>
 
@@ -67,7 +68,9 @@ uint32_t    s_insManifest = 0;
 // A full rich theme, used to decide when the leftover room is too fragmented to bother
 // keeping other themes' entries. 466x466 with alpha is 636 KB, and a theme runs to ~13
 // of those and their smaller siblings.
-constexpr uint32_t FULL_THEME_BYTES = 4u * 1024 * 1024;
+// Scales with the panel's area: the same theme baked at 800 px is 2.95x the bytes.
+constexpr uint32_t FULL_THEME_BYTES =
+    (uint32_t)(4ull * 1024 * 1024 * ORB_SCREEN_PX * ORB_SCREEN_PX / (ORB_DESIGN_PX * ORB_DESIGN_PX));
 
 bool map_partition() {
     if (s_mapped) { esp_partition_munmap(s_map); s_mapped = nullptr; s_map = 0; }

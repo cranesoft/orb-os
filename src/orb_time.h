@@ -29,6 +29,7 @@
 #include <ctime>
 #if !defined(ARDUINO)
 #include <cstdlib>
+#include <cstdio>
 #endif
 
 // True when the clock has really been set (NTP or the RTC). `ti` is filled either way,
@@ -38,6 +39,15 @@ inline bool orb_local_time(struct tm *ti) {
     const bool read = localtime_r(&now, ti) != nullptr;
 #if !defined(ARDUINO)
     if (getenv("SIM_NO_TIME")) return false;   // photograph the not-yet-set face
+    // SIM_TIME=HH:MM:SS stops the clock, so two builds photograph the same instant and a
+    // pixel diff between them measures the code rather than the seconds that passed.
+    if (const char *fixed = getenv("SIM_TIME")) {
+        int h = 0, m = 0, s = 0;
+        if (sscanf(fixed, "%d:%d:%d", &h, &m, &s) >= 2) {
+            ti->tm_hour = h; ti->tm_min = m; ti->tm_sec = s;
+            return read;
+        }
+    }
 #endif
     // Arduino's own threshold, kept deliberately: anything at or before 2016 is the epoch
     // still sitting where it started rather than a time anybody set.

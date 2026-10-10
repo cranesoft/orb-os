@@ -1,4 +1,5 @@
 #include "splash_art.h"
+#include "config.h"   // SCREEN_W: the splash is full-screen art
 #ifdef ARDUINO
 #include <Arduino.h>
 #include <esp_heap_caps.h>
@@ -31,7 +32,7 @@ static uint32_t millis() {
 
 namespace {
 
-constexpr int SZ = 466;
+constexpr int SZ = SCREEN_W;
 PNG      *s_png = nullptr;
 uint16_t *s_buf  = nullptr;   // decode target, PSRAM — valid until the next splash_art_decode() call
 

@@ -309,7 +309,7 @@ static void parse_pill(JsonVariantConst j, T &t) {
     t.bgOpa = opa_of(j["bgOpa"], t.bgOpa);
     if (j["radius"].is<int>()) {
         const int r = j["radius"].as<int>();
-        t.radius = r < 0 ? 0 : (r > 40 ? 40 : r);
+        t.radius = r < 0 ? 0 : (r > ORB_PX(40) ? ORB_PX(40) : r);
     }
 }
 
@@ -379,8 +379,8 @@ static void merge_zones(JsonVariantConst arr, theme_style::Zone *out, int &count
         }
         if (invert) hasInvert = true;
         theme_style::Zone &zo = out[count++];
-        zo.x      = z["x"] | 233;
-        zo.y      = z["y"] | 233;
+        zo.x      = z["x"] | SCREEN_CX;
+        zo.y      = z["y"] | SCREEN_CY;
         zo.r      = r;
         zo.w      = w;
         zo.h      = h;
@@ -599,17 +599,17 @@ void load() {
 
             if (doc["nameColor"].is<uint32_t>()) s_ticker.nameColor = doc["nameColor"].as<uint32_t>();
             if (doc["nameSize"].is<int>())  s_ticker.nameSize = doc["nameSize"].as<int>();
-            if (doc["nameY"].is<int>())     s_ticker.nameY    = clampi(doc["nameY"].as<int>(), 0, 465);
+            if (doc["nameY"].is<int>())     s_ticker.nameY    = clampi(doc["nameY"].as<int>(), 0, SCREEN_H - 1);
             if (doc["nameShow"].is<bool>()) s_ticker.nameShow = doc["nameShow"].as<bool>();
 
             if (doc["priceSize"].is<int>())     s_ticker.priceSize    = doc["priceSize"].as<int>();
-            if (doc["priceY"].is<int>())        s_ticker.priceY       = clampi(doc["priceY"].as<int>(), 0, 465);
+            if (doc["priceY"].is<int>())        s_ticker.priceY       = clampi(doc["priceY"].as<int>(), 0, SCREEN_H - 1);
             if (doc["priceShow"].is<bool>())    s_ticker.priceShow    = doc["priceShow"].as<bool>();
             if (doc["priceColorOn"].is<bool>()) s_ticker.priceColorOn = doc["priceColorOn"].as<bool>();
             if (doc["priceColor"].is<uint32_t>()) s_ticker.priceColor = doc["priceColor"].as<uint32_t>();
 
             if (doc["changeSize"].is<int>())  s_ticker.changeSize = doc["changeSize"].as<int>();
-            if (doc["changeY"].is<int>())     s_ticker.changeY    = clampi(doc["changeY"].as<int>(), 0, 465);
+            if (doc["changeY"].is<int>())     s_ticker.changeY    = clampi(doc["changeY"].as<int>(), 0, SCREEN_H - 1);
             if (doc["changeShow"].is<bool>()) s_ticker.changeShow = doc["changeShow"].as<bool>();
             if (doc["changePct"].is<bool>())  s_ticker.changePct  = doc["changePct"].as<bool>();
 
@@ -620,8 +620,8 @@ void load() {
             if (doc["stripColor"].is<uint32_t>()) s_ticker.stripColor = doc["stripColor"].as<uint32_t>();
             if (doc["stripOpa"].is<int>())      s_ticker.stripOpa   = clampi(doc["stripOpa"].as<int>(), 0, 255);
             if (doc["stripSpeed"].is<int>())    s_ticker.stripSpeed = clampi(doc["stripSpeed"].as<int>(), 1, 120);
-            if (doc["stripY"].is<int>())        s_ticker.stripY     = clampi(doc["stripY"].as<int>(), 0, 465);
-            if (doc["stripRadius"].is<int>())   s_ticker.stripRadius = clampi(doc["stripRadius"].as<int>(), 40, 233);
+            if (doc["stripY"].is<int>())        s_ticker.stripY     = clampi(doc["stripY"].as<int>(), 0, SCREEN_H - 1);
+            if (doc["stripRadius"].is<int>())   s_ticker.stripRadius = clampi(doc["stripRadius"].as<int>(), ORB_PX(40), SCREEN_CX);
             if (doc["stripAngle"].is<int>())    s_ticker.stripAngle = clampi(doc["stripAngle"].as<int>(), 0, 359);
             if (doc["stripUpDown"].is<bool>())  s_ticker.stripUpDown = doc["stripUpDown"].as<bool>();
         }
@@ -652,7 +652,7 @@ void load() {
             if (doc["coastEnabled"].is<bool>()) s_weather.coastEnabled = doc["coastEnabled"].as<bool>();
             if (doc["ringColorOn"].is<bool>()) s_weather.ringColorOn = doc["ringColorOn"].as<bool>();
             if (doc["ringCount"].is<int>())    s_weather.ringCount   = clampi(doc["ringCount"].as<int>(), 1, 5);
-            if (doc["ringWidth"].is<int>())    s_weather.ringWidth   = clampi(doc["ringWidth"].as<int>(), 1, 6);
+            if (doc["ringWidth"].is<int>())    s_weather.ringWidth   = clampi(doc["ringWidth"].as<int>(), 1, ORB_PX(6));
             if (doc["ringOpacity"].is<int>())  s_weather.ringOpacity = clampi(doc["ringOpacity"].as<int>(), 0, 255);
             if (doc["crosshair"].is<bool>())   s_weather.crosshair   = doc["crosshair"].as<bool>();
             // Four themeable lines, same struct and same reader as the Flight Tracker's, so
@@ -685,8 +685,8 @@ void load() {
                 if (cr["curved"].is<bool>())    c.curved = cr["curved"].as<bool>();
                 if (cr["curveR"].is<int>())     c.curveR = cr["curveR"].as<int>();
                 if (cr["arcDeg"].is<int>())     c.arcDeg = cr["arcDeg"].as<int>();
-                if (c.curveR < 40)  c.curveR = 40;
-                if (c.curveR > 233) c.curveR = 233;
+                if (c.curveR < ORB_PX(40))  c.curveR = ORB_PX(40);
+                if (c.curveR > SCREEN_CX) c.curveR = SCREEN_CX;
                 c.arcDeg = ((c.arcDeg % 360) + 360) % 360;
                 // Curved wins over the pill rather than the other way round. Orb Studio only
                 // offers the curve once the pill is off, so the two can only arrive together
@@ -700,8 +700,8 @@ void load() {
                 if (c.bgOpa < 0)   c.bgOpa = 0;
                 if (c.bgOpa > 255) c.bgOpa = 255;
                 // Kept on the glass. A credit dragged off the edge is a credit removed.
-                if (c.x < 30) c.x = 30;  if (c.x > 436) c.x = 436;
-                if (c.y < 10) c.y = 10;  if (c.y > 450) c.y = 450;
+                if (c.x < ORB_PX(30)) c.x = ORB_PX(30);  if (c.x > ORB_PX(436)) c.x = ORB_PX(436);
+                if (c.y < ORB_PX(10)) c.y = ORB_PX(10);  if (c.y > ORB_PX(450)) c.y = ORB_PX(450);
             }
         }
     }
@@ -842,12 +842,12 @@ void load() {
             s_settings.selGlowColor = s_settings.itemGlowColor = s_settings.glowColor;
             if (doc["selGlow"].is<int>()) {
                 const int v = doc["selGlow"].as<int>();
-                s_settings.selGlow = v < 0 ? 0 : (v > 40 ? 40 : v);
+                s_settings.selGlow = v < 0 ? 0 : (v > ORB_PX(40) ? ORB_PX(40) : v);
             }
             if (doc["selGlowColor"].is<uint32_t>()) s_settings.selGlowColor = doc["selGlowColor"].as<uint32_t>();
             if (doc["itemGlow"].is<int>()) {
                 const int v = doc["itemGlow"].as<int>();
-                s_settings.itemGlow = v < 0 ? 0 : (v > 40 ? 40 : v);
+                s_settings.itemGlow = v < 0 ? 0 : (v > ORB_PX(40) ? ORB_PX(40) : v);
             }
             if (doc["itemGlowColor"].is<uint32_t>()) s_settings.itemGlowColor = doc["itemGlowColor"].as<uint32_t>();
             if (doc["hlShow"].is<bool>()) s_settings.hlShow = doc["hlShow"].as<bool>();
@@ -925,22 +925,22 @@ void load() {
             s_intel.selBarOpa = opa_of(doc["selBarOpa"], s_intel.selBarOpa);
             if (doc["selBarRadius"].is<int>()) {
                 const int v = doc["selBarRadius"].as<int>();
-                s_intel.selBarRadius = v < 0 ? 0 : (v > 60 ? 60 : v);
+                s_intel.selBarRadius = v < 0 ? 0 : (v > ORB_PX(60) ? ORB_PX(60) : v);
             }
             if (doc["selBarPadX"].is<int>()) {
                 const int v = doc["selBarPadX"].as<int>();
-                s_intel.selBarPadX = v < 0 ? 0 : (v > 40 ? 40 : v);
+                s_intel.selBarPadX = v < 0 ? 0 : (v > ORB_PX(40) ? ORB_PX(40) : v);
             }
             if (doc["selBarPadY"].is<int>()) {
                 const int v = doc["selBarPadY"].as<int>();
-                s_intel.selBarPadY = v < 0 ? 0 : (v > 40 ? 40 : v);
+                s_intel.selBarPadY = v < 0 ? 0 : (v > ORB_PX(40) ? ORB_PX(40) : v);
             }
             if (doc["briefColorOn"].is<bool>()) s_intel.briefColorOn = doc["briefColorOn"].as<bool>();
             if (doc["briefColor"].is<uint32_t>()) s_intel.briefColor = doc["briefColor"].as<uint32_t>();
             s_intel.briefOpa = opa_of(doc["briefOpa"], s_intel.briefOpa);
             if (doc["briefGap"].is<int>()) {
                 const int v = doc["briefGap"].as<int>();
-                s_intel.briefGap = v < 0 ? 0 : (v > 40 ? 40 : v);
+                s_intel.briefGap = v < 0 ? 0 : (v > ORB_PX(40) ? ORB_PX(40) : v);
             }
             if (doc["count"].is<int>()) {
                 const int c = doc["count"].as<int>();
@@ -957,7 +957,7 @@ void load() {
             if (doc["curvedBounds"].is<bool>()) s_intel.curvedBounds = doc["curvedBounds"].as<bool>();
             if (doc["curveRadius"].is<int>()) {
                 const int r = doc["curveRadius"].as<int>();
-                s_intel.curveRadius = r < 140 ? 140 : (r > 400 ? 400 : r);
+                s_intel.curveRadius = r < ORB_PX(140) ? ORB_PX(140) : (r > ORB_PX(400) ? ORB_PX(400) : r);
             }
             // THEME_CAPS 11, widened at 12. Sizes must land on a compiled Montserrat font:
             // an unknown size snaps to the default rather than to "nearest", because nearest
@@ -988,14 +988,14 @@ void load() {
             if (doc["titleShow"].is<bool>()) s_intel.titleShow = doc["titleShow"].as<bool>();
             if (doc["titleSize"].is<int>() && fontSizeOk(doc["titleSize"].as<int>()))
                 s_intel.titleSize = doc["titleSize"].as<int>();
-            auto clampPos = [](int v) { return v < 0 ? 0 : (v > 466 ? 466 : v); };
+            auto clampPos = [](int v) { return v < 0 ? 0 : (v > SCREEN_W ? SCREEN_W : v); };
             if (doc["titleX"].is<int>()) s_intel.titleX = clampPos(doc["titleX"].as<int>());
             if (doc["titleY"].is<int>()) s_intel.titleY = clampPos(doc["titleY"].as<int>());
             if (doc["textSize"].is<int>()) {
                 const int v = doc["textSize"].as<int>();
                 s_intel.textSize = fontSizeOk(v) ? v : 0;   // 0 = automatic, and the refusal
             }
-            auto clampMargin = [](int v) { return v < 0 ? 0 : (v > 200 ? 200 : v); };
+            auto clampMargin = [](int v) { return v < 0 ? 0 : (v > ORB_PX(200) ? ORB_PX(200) : v); };
             if (doc["marginLeft"].is<int>())  s_intel.marginLeft  = clampMargin(doc["marginLeft"].as<int>());
             if (doc["marginRight"].is<int>()) s_intel.marginRight = clampMargin(doc["marginRight"].as<int>());
             if (doc["marginTop"].is<int>())    s_intel.marginTop    = clampMargin(doc["marginTop"].as<int>());
@@ -1006,11 +1006,11 @@ void load() {
             }
             if (doc["lineGap"].is<int>()) {
                 const int g = doc["lineGap"].as<int>();
-                s_intel.lineGap = g < 0 ? 0 : (g > 24 ? 24 : g);
+                s_intel.lineGap = g < 0 ? 0 : (g > ORB_PX(24) ? ORB_PX(24) : g);
             }
             if (doc["sourceGap"].is<int>()) {
                 const int g = doc["sourceGap"].as<int>();
-                s_intel.sourceGap = g < 0 ? 0 : (g > 24 ? 24 : g);
+                s_intel.sourceGap = g < 0 ? 0 : (g > ORB_PX(24) ? ORB_PX(24) : g);
             }
             // Anything unrecognised keeps the current value rather than snapping to a
             // default: a typo in a hand-edited theme should leave the screen as designed,
@@ -1042,15 +1042,15 @@ void load() {
                 };
                 for (P &q : pairs) {
                     if (doc[q.on].is<bool>()) q.place = doc[q.on].as<bool>();
-                    if (doc[q.x].is<int>()) { const int v = doc[q.x].as<int>(); q.px = v < 0 ? 0 : (v > 466 ? 466 : v); }
-                    if (doc[q.y].is<int>()) { const int v = doc[q.y].as<int>(); q.py = v < 0 ? 0 : (v > 466 ? 466 : v); }
+                    if (doc[q.x].is<int>()) { const int v = doc[q.x].as<int>(); q.px = v < 0 ? 0 : (v > SCREEN_W ? SCREEN_W : v); }
+                    if (doc[q.y].is<int>()) { const int v = doc[q.y].as<int>(); q.py = v < 0 ? 0 : (v > SCREEN_W ? SCREEN_W : v); }
                 }
             }
             if (doc["ageFmt"].is<const char *>())
                 snprintf(s_intel.ageFmt, sizeof(s_intel.ageFmt), "%s", doc["ageFmt"].as<const char *>());
             if (doc["blockOffsetY"].is<int>()) {
                 const int o = doc["blockOffsetY"].as<int>();
-                s_intel.blockOffsetY = o < -160 ? -160 : (o > 160 ? 160 : o);
+                s_intel.blockOffsetY = o < ORB_PX(-160) ? ORB_PX(-160) : (o > ORB_PX(160) ? ORB_PX(160) : o);
             }
             if (doc["ageShow"].is<bool>()) s_intel.ageShow = doc["ageShow"].as<bool>();
             if (doc["ageX"].is<int>()) s_intel.ageX = clampPos(doc["ageX"].as<int>());
@@ -1061,7 +1061,7 @@ void load() {
                 s_intel.ageSize = doc["ageSize"].as<int>();
             if (doc["ageGlow"].is<int>()) {
                 const int g = doc["ageGlow"].as<int>();
-                s_intel.ageGlow = g < 0 ? 0 : (g > 20 ? 20 : g);
+                s_intel.ageGlow = g < 0 ? 0 : (g > ORB_PX(20) ? ORB_PX(20) : g);
             }
             if (doc["ageGlowColor"].is<uint32_t>()) s_intel.ageGlowColor = doc["ageGlowColor"].as<uint32_t>();
             if (doc["ageCurved"].is<bool>()) s_intel.ageCurved = doc["ageCurved"].as<bool>();
@@ -1069,11 +1069,11 @@ void load() {
             s_intel.ageBgOpa = opa_of(doc["ageBgOpa"], s_intel.ageBgOpa);
             if (doc["ageRadius"].is<int>()) {
                 const int r = doc["ageRadius"].as<int>();
-                s_intel.ageRadius = r < 0 ? 0 : (r > 40 ? 40 : r);
+                s_intel.ageRadius = r < 0 ? 0 : (r > ORB_PX(40) ? ORB_PX(40) : r);
             }
             if (doc["ageCurveR"].is<int>()) {
                 const int r = doc["ageCurveR"].as<int>();
-                s_intel.ageCurveR = r < 40 ? 40 : (r > 233 ? 233 : r);
+                s_intel.ageCurveR = r < ORB_PX(40) ? ORB_PX(40) : (r > SCREEN_CX ? SCREEN_CX : r);
             }
             if (doc["ageArcDeg"].is<float>()) s_intel.ageArcDeg = doc["ageArcDeg"].as<float>();
         }

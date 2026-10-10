@@ -1,4 +1,5 @@
-// M0 bring-up: CO5300 466x466 AMOLED via Arduino_GFX (QSPI) + LVGL.
+// Panel + LVGL: CO5300 466x466 AMOLED over QSPI on the Orb, JD9365 800x800 IPS over
+// MIPI-DSI on the Big Orb (ORB_BOARD_P4_34C). Everything past draw_block() is shared.
 // Pins come from config.h (confirmed against the Waveshare board definition and a
 // working Arduino_GFX port for this exact panel). The panel runs off the always-on
 // DC1 rail, so it lights up without configuring the AXP2101 PMIC.
@@ -16,10 +17,19 @@
 #include <string.h>
 
 // --- Arduino_GFX panel -------------------------------------------------------
+#if defined(ORB_BOARD_P4_34C)
+// The Big Orb: JD9365 over MIPI-DSI. The DSI driver keeps the whole 800x800 frame in PSRAM
+// and scans it out continuously, so a "flush" is a copy into that frame plus a cache sync,
+// with no bus transaction and no window alignment rule. Brightness is a PWM backlight.
+#include "panel_jd9365_34c.h"
+static Arduino_ESP32DSIPanel *s_dsi = nullptr;
+static Arduino_DSI_Display   *s_gfx = nullptr;
+#else
 // Typed as Arduino_CO5300* (not Arduino_GFX*) so setBrightness() — declared on
 // Arduino_OLED, not the GFX base — is reachable.
 static Arduino_DataBus *s_bus = nullptr;
 static Arduino_CO5300  *s_gfx = nullptr;
+#endif
 
 // --- LVGL plumbing -----------------------------------------------------------
 #define LVGL_BUF_LINES 40    // partial draw-buffer height (lines); kept in fast internal RAM
@@ -232,6 +242,7 @@ static void flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *px) 
     lv_disp_flush_ready(drv);
 }
 
+#if !defined(ORB_BOARD_P4_34C)
 // CO5300 (QSPI) requires 2-pixel-aligned flush windows: even start, odd end.
 // Without this, partial-area updates (e.g. the radar sweep) tear / ghost / flicker.
 static void rounder_cb(lv_disp_drv_t *drv, lv_area_t *area) {
@@ -241,6 +252,7 @@ static void rounder_cb(lv_disp_drv_t *drv, lv_area_t *area) {
     area->x2 |= 1;
     area->y2 |= 1;
 }
+#endif
 
 // Touch is deliberately not wired up. The Orb is knob-only: see the input model in
 // docs/ARCHITECTURE.md and section 2 of orb-user-requirements.md. The CST9217 driver
@@ -267,6 +279,25 @@ static void dmark(const char *what) {
 namespace display {
 
 bool begin() {
+#if defined(ORB_BOARD_P4_34C)
+    Serial.println("[display] init JD9365 MIPI-DSI 800x800...");
+    // Backlight off until the first frame is in, so power-on shows black, not noise.
+    pinMode(PIN_LCD_BL, OUTPUT);
+    analogWrite(PIN_LCD_BL, 0);
+    s_dsi = new Arduino_ESP32DSIPanel(LCD_DSI_HSYNC_PW, LCD_DSI_HSYNC_BP, LCD_DSI_HSYNC_FP,
+                                      LCD_DSI_VSYNC_PW, LCD_DSI_VSYNC_BP, LCD_DSI_VSYNC_FP,
+                                      LCD_DSI_DPI_HZ, LCD_DSI_LANE_MBPS);
+    s_gfx = new Arduino_DSI_Display(SCREEN_W, SCREEN_H, s_dsi, 0 /*rotation*/, true /*auto_flush*/,
+                                    PIN_LCD_RST, JD9365_34C_INIT,
+                                    sizeof(JD9365_34C_INIT) / sizeof(JD9365_34C_INIT[0]));
+    if (!s_gfx->begin()) {
+        Serial.println("[display] gfx->begin() FAILED");
+        return false;
+    }
+    dmark("after gfx begin");
+    s_gfx->fillScreen(RGB565_BLACK);
+    analogWrite(PIN_LCD_BL, BRIGHTNESS_DEFAULT);
+#else
     Serial.println("[display] init CO5300 QSPI...");
     s_bus = new Arduino_ESP32QSPI(PIN_LCD_CS, PIN_LCD_SCLK,
                                   PIN_LCD_D0, PIN_LCD_D1, PIN_LCD_D2, PIN_LCD_D3);
@@ -280,6 +311,7 @@ bool begin() {
     dmark("after gfx begin");
     s_gfx->fillScreen(RGB565_BLACK);
     s_gfx->setBrightness(BRIGHTNESS_DEFAULT);
+#endif
     Serial.println("[display] panel up; init LVGL...");
 
     dmark("before lv_init");
@@ -314,7 +346,9 @@ bool begin() {
     s_disp_drv.hor_res  = SCREEN_W;
     s_disp_drv.ver_res  = SCREEN_H;
     s_disp_drv.flush_cb = flush_cb;
+#if !defined(ORB_BOARD_P4_34C)
     s_disp_drv.rounder_cb = rounder_cb;     // CO5300 needs 2-px-aligned windows
+#endif
     s_disp_drv.draw_buf = &s_draw_buf;
     lv_disp_drv_register(&s_disp_drv);
 
@@ -337,7 +371,11 @@ void loop() {
 
 void markInput(uint32_t ms) { s_inputAtMs = ms ? ms : 1; s_inputPx0 = s_flushedPx; }
 
+#if defined(ORB_BOARD_P4_34C)
+void setBrightness(uint8_t v) { analogWrite(PIN_LCD_BL, v); }   // 8-bit LEDC PWM on the backlight
+#else
 void setBrightness(uint8_t v) { if (s_gfx) s_gfx->setBrightness(v); }
+#endif
 
 void setRotation(uint16_t degrees) {
     uint16_t normalized = (uint16_t)(degrees % 360);

@@ -1,6 +1,8 @@
 #include "knob_help.h"
+#include "orb_words.h"   // orb_ui(): knob words become touch words on the Big Orb
 
 #include <lvgl.h>
+#include "config.h"
 #ifdef ARDUINO
 #include <Arduino.h>
 #endif
@@ -34,22 +36,30 @@ void ensure() {
     lv_label_set_text(label, "Hint:");
     lv_obj_set_style_text_color(label, lv_color_hex(0x9aa4b0), 0);
     lv_obj_set_style_text_font(label, &lv_font_montserrat_20, 0);
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, -84);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, ORB_PX(-84));
 
     // Wrapped by LVGL at a width that clears the bezel. It comes out four lines at this
     // size, and 340 px is the widest that block can be and still sit inside a 466 px circle
     // with the curve biting at the ends of the top and bottom lines.
     lv_obj_t *body = lv_label_create(s_panel);
     lv_label_set_long_mode(body, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(body, 340);
+    lv_obj_set_width(body, ORB_PX(340));
+#if ORB_HAS_TOUCH_KNOB
+    // The Big Orb's Rock is a still hold on the glass (knob_touch.cpp).
+    lv_label_set_text(body,
+                      "To open the main menu from any app, "
+                      "touch the screen and hold still "
+                      "for a moment");
+#else
     lv_label_set_text(body,
                       "To activate the main menu from any app, "
                       "\"rock\" the knob by quickly turning the "
                       "knob left and then right");
+#endif
     lv_obj_set_style_text_color(body, lv_color_white(), 0);
     lv_obj_set_style_text_font(body, &lv_font_montserrat_20, 0);
     lv_obj_set_style_text_align(body, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(body, LV_ALIGN_CENTER, 0, 8);
+    lv_obj_align(body, LV_ALIGN_CENTER, 0, ORB_PX(8));
 
     // Kept, quietly. A screen that appeared uninvited must never be one you have to work
     // out how to close.
@@ -60,10 +70,10 @@ void ensure() {
     // Ready notice demanding a press and making a screen about the knob being yours again
     // the one screen where most of the knob did nothing.
     lv_obj_t *hint = lv_label_create(s_panel);
-    lv_label_set_text(hint, "turn or push to carry on");
+    lv_label_set_text(hint, orb_ui("turn or push to carry on"));
     lv_obj_set_style_text_color(hint, lv_color_hex(0x5a636e), 0);
     lv_obj_set_style_text_font(hint, &lv_font_montserrat_16, 0);
-    lv_obj_align(hint, LV_ALIGN_CENTER, 0, 122);
+    lv_obj_align(hint, LV_ALIGN_CENTER, 0, ORB_PX(122));
 }
 
 }  // namespace

@@ -102,7 +102,7 @@ void repaint() {
     // lineStep; these lines have no such field yet.
     const char *credits[] = { "Aircraft data: adsb.lol", "Map data: OpenStreetMap" };
     theme_style::SplashText second = sp.credits;
-    second.y += (int)lv_font_get_line_height(splash_font(sp.credits.size)) + 4;
+    second.y += (int)lv_font_get_line_height(splash_font(sp.credits.size)) + ORB_PX(4);
     one_line(sp.credits, credits[0]);
     one_line(second, credits[1]);
     if (s_canvas) lv_obj_invalidate(s_canvas);

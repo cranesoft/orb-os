@@ -1,4 +1,5 @@
 #include "settings_view.h"
+#include "orb_words.h"   // orb_ui(): knob words become touch words on the Big Orb
 #include "app_shell.h"
 #include "app_theme.h"
 #include "theme_select.h"   // which Launch Kit design (of however many are installed on the SD card) is active
@@ -165,10 +166,10 @@ namespace {
     const Chrome &chrome() {
         // Fixed, and deliberately the stock values rather than a copy of any theme's.
         static const Chrome SYSTEM = {
-            150.0f, 26.0f, 26.0f, 0.0f, 1.0f,
+            ORB_PXF(150.0f), ORB_PXF(26.0f), 26.0f, 0.0f, 1.0f,
             0xC8D0DA, 0xFFFFFF, 0x000000, 0x000000,
             255, 255, 0, 0,
-            300, 44, 10, 255,
+            ORB_PX(300), ORB_PX(44), ORB_PX(10), 255,
             0x2A2E33,
             true,
             false,
@@ -313,7 +314,7 @@ namespace {
     // about it. Larger type means fewer rows, which is the same trade the character strip
     // makes: this is a scrolling list, so what is visible at once was never the whole set.
     constexpr int WIFI_VISIBLE = 4;        // rows shown at once in the scrolling network list
-    constexpr int WIFI_ROW_DY  = 56;   // was 44; 26 px rows need the room
+    constexpr int WIFI_ROW_DY  = ORB_PX(56);   // was 44; 26 px rows need the room
 
     // search state
     char   s_str[28]   = "";
@@ -402,8 +403,8 @@ namespace {
     // which needs this path. So these screens are the one place that cannot lean on the
     // accessibility feature and must be legible to everybody by default. Same circular
     // dependency as the theme, one layer up.
-    const int FB_ROW1_Y = -40;
-    const int FB_ROW2_Y =  48;
+    const int FB_ROW1_Y = ORB_PX(-40);
+    const int FB_ROW2_Y =  ORB_PX(48);
     int       s_fbSel   = FB_ONDEVICE;
     // Set when boot wanted the WiFi choice but the card notice had to come first.
     bool      s_pendingWifiSetup = false;
@@ -588,9 +589,9 @@ namespace {
             // line and a second would land on its neighbour. This is the rule the WiFi
             // list has had since it was built, applied to every wheel; until now the other
             // pages simply drew off the glass, which a big themed face made easy to do.
-            constexpr float ROW_MARGIN = 26.0f;
-            const float chord = 2.0f * sqrtf(fmaxf(0.0f, 233.0f * 233.0f - sy * sy));
-            const float rowMaxW = fmaxf(80.0f, chord - 2.0f * fabsf(sx) - 2.0f * ROW_MARGIN);
+            constexpr float ROW_MARGIN = ORB_PXF(26.0f);
+            const float chord = 2.0f * sqrtf(fmaxf(0.0f, (float)SCREEN_CX * SCREEN_CX - sy * sy));
+            const float rowMaxW = fmaxf(ORB_PXF(80.0f), chord - 2.0f * fabsf(sx) - 2.0f * ROW_MARGIN);
             // The plain-label path (stock look, or a theme without glow): a fixed ONE-LINE
             // box and LVGL's end-dot long mode. The themed painter below takes the same
             // width instead.
@@ -653,7 +654,7 @@ namespace {
             // Positioned above like every other row, so anything reading these objects'
             // geometry still finds them where it expects; simply not drawn.
             if (offDial) continue;
-            settings_text::draw_item(lv_label_get_text(items[i]), 233.0f + sx, 233.0f + sy,
+            settings_text::draw_item(lv_label_get_text(items[i]), (float)SCREEN_CX + sx, (float)SCREEN_CY + sy,
                                      lv_color_hex(i == sel ? ch.selColor : ch.itemColor), rowOpa,
                                      i == sel ? ch.selGlow : ch.itemGlow,
                                      lv_color_hex(i == sel ? ch.selGlowColor : ch.itemGlowColor),
@@ -698,7 +699,7 @@ namespace {
 
     void refresh_bright() {
         int pct = (int)lroundf((s_bri - BRI_MIN) * 100.0f / (BRI_MAX - BRI_MIN));
-        lv_obj_set_width(s_barFill, (lv_coord_t)(4 + pct * (236 - 4) / 100));
+        lv_obj_set_width(s_barFill, (lv_coord_t)(ORB_PX(4) + pct * (ORB_PX(236) - ORB_PX(4)) / 100));
         char buf[8];
         snprintf(buf, sizeof(buf), "%d%%", pct);
         lv_label_set_text(s_pct, buf);
@@ -823,7 +824,7 @@ namespace {
     }
 
     void refresh_vol() {
-        lv_obj_set_width(s_volFill, (lv_coord_t)(4 + s_vol * (236 - 4) / 100));
+        lv_obj_set_width(s_volFill, (lv_coord_t)(ORB_PX(4) + s_vol * (ORB_PX(236) - ORB_PX(4)) / 100));
         char buf[8];
         if (s_vol == 0) snprintf(buf, sizeof(buf), "OFF");
         else            snprintf(buf, sizeof(buf), "%d%%", s_vol);
@@ -878,7 +879,7 @@ namespace {
                             0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
             if (sz.x > wid) wid = sz.x;
         }
-        lv_obj_set_size(s_fbHl, wid + 44, 52);
+        lv_obj_set_size(s_fbHl, wid + ORB_PX(44), ORB_PX(52));
         lv_obj_align(s_fbHl, LV_ALIGN_CENTER, 0, s_fbSel == 0 ? FB_ROW1_Y : FB_ROW2_Y);
     }
 
@@ -1118,7 +1119,7 @@ namespace {
         lv_obj_clear_flag(s_wifiHl, LV_OBJ_FLAG_HIDDEN);
         lv_obj_align(s_wifiHl, LV_ALIGN_CENTER, 0, -(WIFI_VISIBLE - 1) * WIFI_ROW_DY / 2 + hlRow * WIFI_ROW_DY);
         lv_label_set_text(s_wifiListHint, s_firstBootPrompt ? "Start by connecting to your local Wi-Fi"
-                                                             : "turn to choose, push to select");
+                                                             : orb_ui("turn to choose, push to select"));
     }
 
     void refresh_wifi_pass() {
@@ -1153,8 +1154,8 @@ namespace {
         // Measuring and walking outward from the selected cell handles any mix of widths,
         // so a longer key label later cannot bring this back.
         {
-            constexpr int GAP = 18;      // clear space between neighbouring keys, px
-            constexpr int Y   = 20;      // the strip's line, unchanged
+            constexpr int GAP = ORB_PX(18);      // clear space between neighbouring keys, px
+            constexpr int Y   = ORB_PX(20);      // the strip's line, unchanged
             int w[7];
             for (int k = 0; k < 7; ++k) {
                 lv_point_t sz;
@@ -1268,7 +1269,7 @@ namespace {
                 }
             } else {
                 lv_label_set_text_fmt(s_wifiStatusLbl, "Couldn't connect to\n%s.\nCheck the password.", s_wifiSelSsid);
-                lv_label_set_text(s_wifiStatusHint, "push to go back");
+                lv_label_set_text(s_wifiStatusHint, orb_ui("push to go back"));
             }
         }
     }
@@ -1723,32 +1724,32 @@ void settingsview::init() {
     lv_label_set_text(blabel, "Brightness");
     lv_obj_set_style_text_color(blabel, C_WHITE, 0);
     lv_obj_set_style_text_font(blabel, &lv_font_montserrat_20, 0);
-    lv_obj_align(blabel, LV_ALIGN_CENTER, 0, -70);
+    lv_obj_align(blabel, LV_ALIGN_CENTER, 0, ORB_PX(-70));
     lv_obj_t *track = lv_obj_create(s_bright);
     lv_obj_remove_style_all(track);
-    lv_obj_set_size(track, 240, 18);
-    lv_obj_set_style_radius(track, 9, 0);
+    lv_obj_set_size(track, ORB_PX(240), ORB_PX(18));
+    lv_obj_set_style_radius(track, ORB_PX(9), 0);
     lv_obj_set_style_bg_color(track, C_TRACK, 0);
     lv_obj_set_style_bg_opa(track, LV_OPA_COVER, 0);
     lv_obj_clear_flag(track, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(track, LV_ALIGN_CENTER, 0, 0);
     s_barFill = lv_obj_create(track);
     lv_obj_remove_style_all(s_barFill);
-    lv_obj_set_size(s_barFill, 120, 14);
-    lv_obj_set_style_radius(s_barFill, 7, 0);
+    lv_obj_set_size(s_barFill, ORB_PX(120), ORB_PX(14));
+    lv_obj_set_style_radius(s_barFill, ORB_PX(7), 0);
     lv_obj_set_style_bg_color(s_barFill, C_ACCENT, 0);
     lv_obj_set_style_bg_opa(s_barFill, LV_OPA_COVER, 0);
-    lv_obj_align(s_barFill, LV_ALIGN_LEFT_MID, 2, 0);
+    lv_obj_align(s_barFill, LV_ALIGN_LEFT_MID, ORB_PX(2), 0);
     s_pct = lv_label_create(s_bright);
     lv_label_set_text(s_pct, "--%");
     lv_obj_set_style_text_color(s_pct, C_WHITE, 0);
     lv_obj_set_style_text_font(s_pct, &lv_font_montserrat_20, 0);
-    lv_obj_align(s_pct, LV_ALIGN_CENTER, 0, 50);
+    lv_obj_align(s_pct, LV_ALIGN_CENTER, 0, ORB_PX(50));
     lv_obj_t *bhint = lv_label_create(s_bright);
-    lv_label_set_text(bhint, "turn to adjust, push to save");
+    lv_label_set_text(bhint, orb_ui("turn to adjust, push to save"));
     lv_obj_set_style_text_color(bhint, C_GREY, 0);
     lv_obj_set_style_text_font(bhint, &lv_font_montserrat_14, 0);
-    lv_obj_align(bhint, LV_ALIGN_CENTER, 0, 110);
+    lv_obj_align(bhint, LV_ALIGN_CENTER, 0, ORB_PX(110));
     reg_hint(bhint);
 
     // --- location menu page (Current / Search / Recent / Back) ---
@@ -1764,7 +1765,7 @@ void settingsview::init() {
     // line somebody actually came here to read; the coordinates below stay exactly where
     // they have always been, because the wheel's upper rows pass through that band and the
     // spacing there is already tuned against them.
-    lv_obj_align(lmtitle, LV_ALIGN_CENTER, 0, -146);
+    lv_obj_align(lmtitle, LV_ALIGN_CENTER, 0, ORB_PX(-146));
     reg_hint(lmtitle);
     // The name, in the primary ink rather than the secondary: between "Leeds, Utah" and
     // "37.23859, -113.35912" it is the first one that answers the question.
@@ -1773,7 +1774,7 @@ void settingsview::init() {
     lv_obj_set_style_text_color(s_lmCity, C_WHITE, 0);
     lv_obj_set_style_text_font(s_lmCity, &lv_font_montserrat_18, 0);
     lv_obj_set_style_text_align(s_lmCity, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_lmCity, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(s_lmCity, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     // Directly under the title and above the wheel, in the dim ink the other secondary
     // readouts use. Text is set in refresh_locmenu(), which runs on every entry.
     s_lmCoords = lv_label_create(s_lmPage);
@@ -1781,7 +1782,7 @@ void settingsview::init() {
     lv_obj_set_style_text_color(s_lmCoords, C_GREY, 0);
     lv_obj_set_style_text_font(s_lmCoords, &lv_font_montserrat_14, 0);
     lv_obj_set_style_text_align(s_lmCoords, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(s_lmCoords, LV_ALIGN_CENTER, 0, -100);
+    lv_obj_align(s_lmCoords, LV_ALIGN_CENTER, 0, ORB_PX(-100));
     s_lmHl = lv_obj_create(s_lmPage);
     style_highlight(s_lmHl);
     for (int i = 0; i < LM_COUNT; ++i) {
@@ -1790,10 +1791,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_locmenu().
     }
     lv_obj_t *lmhint = lv_label_create(s_lmPage);
-    lv_label_set_text(lmhint, "turn to choose, push to select");
+    lv_label_set_text(lmhint, orb_ui("turn to choose, push to select"));
     lv_obj_set_style_text_color(lmhint, C_GREY, 0);
     lv_obj_set_style_text_font(lmhint, &lv_font_montserrat_14, 0);
-    lv_obj_align(lmhint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(lmhint, LV_ALIGN_CENTER, 0, ORB_PX(150));
     reg_hint(lmhint);
 
     // --- first boot: which way do you want to give it WiFi? ---
@@ -1813,7 +1814,7 @@ void settingsview::init() {
     lv_label_set_text(fbTitle, "The Orb needs WiFi");
     lv_obj_set_style_text_color(fbTitle, lv_color_white(), 0);
     lv_obj_set_style_text_font(fbTitle, &lv_font_montserrat_28, 0);
-    lv_obj_align(fbTitle, LV_ALIGN_CENTER, 0, -146);
+    lv_obj_align(fbTitle, LV_ALIGN_CENTER, 0, ORB_PX(-146));
     // Load-bearing, not decoration. The S3 has no 5 GHz radio, so a 5 GHz-only network
     // never appears in the scan at all — and before this line the screen offered no reason
     // why, leaving a stranger looking at a list with their own network missing from it.
@@ -1821,7 +1822,7 @@ void settingsview::init() {
     lv_label_set_text(fbBand, "2.4 GHz only");
     lv_obj_set_style_text_color(fbBand, C_DIM, 0);
     lv_obj_set_style_text_font(fbBand, &lv_font_montserrat_20, 0);
-    lv_obj_align(fbBand, LV_ALIGN_CENTER, 0, -108);
+    lv_obj_align(fbBand, LV_ALIGN_CENTER, 0, ORB_PX(-108));
     s_fbHl = lv_obj_create(s_fbPage);
     style_highlight(s_fbHl);
     for (int i = 0; i < FB_COUNT; ++i) {
@@ -1838,13 +1839,13 @@ void settingsview::init() {
     lv_label_set_text(fbOr, "OR");
     lv_obj_set_style_text_color(fbOr, C_GREY, 0);
     lv_obj_set_style_text_font(fbOr, &lv_font_montserrat_18, 0);
-    lv_obj_align(fbOr, LV_ALIGN_CENTER, 0, 4);
+    lv_obj_align(fbOr, LV_ALIGN_CENTER, 0, ORB_PX(4));
 
     lv_obj_t *fbHint = lv_label_create(s_fbPage);
-    lv_label_set_text(fbHint, "turn to choose, push to select");
+    lv_label_set_text(fbHint, orb_ui("turn to choose, push to select"));
     lv_obj_set_style_text_color(fbHint, C_GREY, 0);
     lv_obj_set_style_text_font(fbHint, &lv_font_montserrat_18, 0);
-    lv_obj_align(fbHint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(fbHint, LV_ALIGN_CENTER, 0, ORB_PX(150));
     reg_hint(fbHint);
 
     // --- first boot: the phone path ---
@@ -1862,29 +1863,29 @@ void settingsview::init() {
     lv_label_set_text(fpLead, "On your phone, join");
     lv_obj_set_style_text_color(fpLead, C_DIM, 0);
     lv_obj_set_style_text_font(fpLead, &lv_font_montserrat_20, 0);
-    lv_obj_align(fpLead, LV_ALIGN_CENTER, 0, -78);
+    lv_obj_align(fpLead, LV_ALIGN_CENTER, 0, ORB_PX(-78));
     // The network name is the one thing on this screen a person has to copy correctly, so
     // it is the one thing set larger than everything around it.
     lv_obj_t *fpSsid = lv_label_create(s_fbPhonePage);
     lv_label_set_text(fpSsid, "The Orb Setup");
     lv_obj_set_style_text_color(fpSsid, lv_color_white(), 0);
     lv_obj_set_style_text_font(fpSsid, &lv_font_montserrat_36, 0);
-    lv_obj_align(fpSsid, LV_ALIGN_CENTER, 0, -36);
+    lv_obj_align(fpSsid, LV_ALIGN_CENTER, 0, ORB_PX(-36));
     lv_obj_t *fpL1 = lv_label_create(s_fbPhonePage);
     lv_label_set_text(fpL1, "A page opens by itself.");
     lv_obj_set_style_text_color(fpL1, lv_color_white(), 0);
     lv_obj_set_style_text_font(fpL1, &lv_font_montserrat_22, 0);
-    lv_obj_align(fpL1, LV_ALIGN_CENTER, 0, 24);
+    lv_obj_align(fpL1, LV_ALIGN_CENTER, 0, ORB_PX(24));
     lv_obj_t *fpL2 = lv_label_create(s_fbPhonePage);
     lv_label_set_text(fpL2, "Pick your network there.");
     lv_obj_set_style_text_color(fpL2, lv_color_white(), 0);
     lv_obj_set_style_text_font(fpL2, &lv_font_montserrat_22, 0);
-    lv_obj_align(fpL2, LV_ALIGN_CENTER, 0, 52);
+    lv_obj_align(fpL2, LV_ALIGN_CENTER, 0, ORB_PX(52));
     lv_obj_t *fpBack = lv_label_create(s_fbPhonePage);
     lv_label_set_text(fpBack, LV_SYMBOL_LEFT "  Back");
     lv_obj_set_style_text_color(fpBack, C_GREY, 0);
     lv_obj_set_style_text_font(fpBack, &lv_font_montserrat_26, 0);
-    lv_obj_align(fpBack, LV_ALIGN_CENTER, 0, 120);
+    lv_obj_align(fpBack, LV_ALIGN_CENTER, 0, ORB_PX(120));
 
     // --- no readable SD card ---
     s_noSdPage = lv_obj_create(s_screen);
@@ -1900,24 +1901,24 @@ void settingsview::init() {
     lv_obj_set_style_text_color(sdTitle, lv_color_white(), 0);
     lv_obj_set_style_text_font(sdTitle, &lv_font_montserrat_28, 0);
     lv_obj_set_style_text_align(sdTitle, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(sdTitle, LV_ALIGN_CENTER, 0, -60);
+    lv_obj_align(sdTitle, LV_ALIGN_CENTER, 0, ORB_PX(-60));
     // Why, in one line. UX-006: nothing on screen is unexplained. Without this the notice
     // is a demand with no reason attached, which is the shape of an error code in words.
     lv_obj_t *sdWhy = lv_label_create(s_noSdPage);
     lv_label_set_text(sdWhy, "Designs live on the card.");
     lv_obj_set_style_text_color(sdWhy, C_DIM, 0);
     lv_obj_set_style_text_font(sdWhy, &lv_font_montserrat_20, 0);
-    lv_obj_align(sdWhy, LV_ALIGN_CENTER, 0, 16);
+    lv_obj_align(sdWhy, LV_ALIGN_CENTER, 0, ORB_PX(16));
     lv_obj_t *sdHow = lv_label_create(s_noSdPage);
     lv_label_set_text(sdHow, "Insert one and restart.");
     lv_obj_set_style_text_color(sdHow, lv_color_white(), 0);
     lv_obj_set_style_text_font(sdHow, &lv_font_montserrat_22, 0);
-    lv_obj_align(sdHow, LV_ALIGN_CENTER, 0, 46);
+    lv_obj_align(sdHow, LV_ALIGN_CENTER, 0, ORB_PX(46));
     lv_obj_t *sdHint = lv_label_create(s_noSdPage);
-    lv_label_set_text(sdHint, "push to carry on without one");
+    lv_label_set_text(sdHint, orb_ui("push to carry on without one"));
     lv_obj_set_style_text_color(sdHint, C_GREY, 0);
     lv_obj_set_style_text_font(sdHint, &lv_font_montserrat_18, 0);
-    lv_obj_align(sdHint, LV_ALIGN_CENTER, 0, 130);
+    lv_obj_align(sdHint, LV_ALIGN_CENTER, 0, ORB_PX(130));
 
     // --- recent cities page (single-item scroller) ---
     s_recPage = lv_obj_create(s_screen);
@@ -1928,23 +1929,23 @@ void settingsview::init() {
     lv_label_set_text(rtitle, "Recent cities");
     lv_obj_set_style_text_color(rtitle, C_DIM, 0);
     lv_obj_set_style_text_font(rtitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(rtitle, LV_ALIGN_CENTER, 0, -70);
+    lv_obj_align(rtitle, LV_ALIGN_CENTER, 0, ORB_PX(-70));
     reg_hint(rtitle);
     s_recName = lv_label_create(s_recPage);
     lv_label_set_text(s_recName, "");
     lv_obj_set_style_text_color(s_recName, C_WHITE, 0);
     lv_obj_set_style_text_font(s_recName, &lv_font_montserrat_20, 0);
-    lv_obj_align(s_recName, LV_ALIGN_CENTER, 0, -14);
+    lv_obj_align(s_recName, LV_ALIGN_CENTER, 0, ORB_PX(-14));
     s_recCoord = lv_label_create(s_recPage);
     lv_label_set_text(s_recCoord, "");
     lv_obj_set_style_text_color(s_recCoord, C_GREY, 0);
     lv_obj_set_style_text_font(s_recCoord, &lv_font_montserrat_14, 0);
-    lv_obj_align(s_recCoord, LV_ALIGN_CENTER, 0, 20);
+    lv_obj_align(s_recCoord, LV_ALIGN_CENTER, 0, ORB_PX(20));
     lv_obj_t *rhint = lv_label_create(s_recPage);
-    lv_label_set_text(rhint, "turn to choose, push to set");
+    lv_label_set_text(rhint, orb_ui("turn to choose, push to set"));
     lv_obj_set_style_text_color(rhint, C_GREY, 0);
     lv_obj_set_style_text_font(rhint, &lv_font_montserrat_14, 0);
-    lv_obj_align(rhint, LV_ALIGN_CENTER, 0, 110);
+    lv_obj_align(rhint, LV_ALIGN_CENTER, 0, ORB_PX(110));
     reg_hint(rhint);
 
     // --- search page ---
@@ -1956,26 +1957,26 @@ void settingsview::init() {
     lv_label_set_text(s_srchText, "type a city name");
     lv_obj_set_style_text_color(s_srchText, C_WHITE, 0);
     lv_obj_set_style_text_font(s_srchText, &lv_font_montserrat_20, 0);
-    lv_obj_align(s_srchText, LV_ALIGN_CENTER, 0, -135);
+    lv_obj_align(s_srchText, LV_ALIGN_CENTER, 0, ORB_PX(-135));
     for (int k = 0; k < 7; ++k) {
         s_strip[k] = lv_label_create(s_srchPage);
         lv_label_set_text(s_strip[k], "");
         lv_obj_set_style_text_color(s_strip[k], C_GREY, 0);
         lv_obj_set_style_text_font(s_strip[k], &lv_font_montserrat_20, 0);
-        lv_obj_align(s_strip[k], LV_ALIGN_CENTER, (k - 3) * 48, -75);
+        lv_obj_align(s_strip[k], LV_ALIGN_CENTER, (k - 3) * ORB_PX(48), ORB_PX(-75));
     }
     for (int j = 0; j < 4; ++j) {
         s_sug[j] = lv_label_create(s_srchPage);
         lv_label_set_text(s_sug[j], "");
         lv_obj_set_style_text_color(s_sug[j], C_DIM, 0);
         lv_obj_set_style_text_font(s_sug[j], &lv_font_montserrat_16, 0);
-        lv_obj_align(s_sug[j], LV_ALIGN_CENTER, 0, -5 + j * 34);
+        lv_obj_align(s_sug[j], LV_ALIGN_CENTER, 0, ORB_PX(-5) + j * ORB_PX(34));
     }
     lv_obj_t *shint = lv_label_create(s_srchPage);
-    lv_label_set_text(shint, "turn to letters then cities");
+    lv_label_set_text(shint, orb_ui("turn to letters then cities"));
     lv_obj_set_style_text_color(shint, C_GREY, 0);
     lv_obj_set_style_text_font(shint, &lv_font_montserrat_14, 0);
-    lv_obj_align(shint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(shint, LV_ALIGN_CENTER, 0, ORB_PX(150));
 
     // --- display menu page (Screen timeout / Brightness / Back) ---
     s_dspPage = lv_obj_create(s_screen);
@@ -1987,7 +1988,7 @@ void settingsview::init() {
         lv_label_set_text(dtitle, "Display");
         lv_obj_set_style_text_color(dtitle, C_DIM, 0);
         lv_obj_set_style_text_font(dtitle, &lv_font_montserrat_16, 0);
-        lv_obj_align(dtitle, LV_ALIGN_CENTER, 0, -110);
+        lv_obj_align(dtitle, LV_ALIGN_CENTER, 0, ORB_PX(-110));
         reg_hint(dtitle);
         s_dspHl = lv_obj_create(s_dspPage);
         style_highlight(s_dspHl);
@@ -1997,10 +1998,10 @@ void settingsview::init() {
             // Font, opacity, position: wheel_layout(), called from refresh_display().
         }
         lv_obj_t *dhint = lv_label_create(s_dspPage);
-        lv_label_set_text(dhint, "turn to choose, push to select");
+        lv_label_set_text(dhint, orb_ui("turn to choose, push to select"));
         lv_obj_set_style_text_color(dhint, C_GREY, 0);
         lv_obj_set_style_text_font(dhint, &lv_font_montserrat_14, 0);
-        lv_obj_align(dhint, LV_ALIGN_CENTER, 0, 150);
+        lv_obj_align(dhint, LV_ALIGN_CENTER, 0, ORB_PX(150));
         reg_hint(dhint);
     }
 
@@ -2013,7 +2014,7 @@ void settingsview::init() {
     lv_label_set_text(sndtitle, "Sound");
     lv_obj_set_style_text_color(sndtitle, C_DIM, 0);
     lv_obj_set_style_text_font(sndtitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(sndtitle, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(sndtitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     reg_hint(sndtitle);
     s_sndHl = lv_obj_create(s_sndPage);
     style_highlight(s_sndHl);
@@ -2023,10 +2024,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_sound().
     }
     lv_obj_t *sndhint = lv_label_create(s_sndPage);
-    lv_label_set_text(sndhint, "turn to choose, push to toggle");
+    lv_label_set_text(sndhint, orb_ui("turn to choose, push to toggle"));
     lv_obj_set_style_text_color(sndhint, C_GREY, 0);
     lv_obj_set_style_text_font(sndhint, &lv_font_montserrat_14, 0);
-    lv_obj_align(sndhint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(sndhint, LV_ALIGN_CENTER, 0, ORB_PX(150));
 
     // --- chime picker page (Sound > Chime sound) ---
     s_chimeSelPage = lv_obj_create(s_screen);
@@ -2037,7 +2038,7 @@ void settingsview::init() {
     lv_label_set_text(chimetitle, "Chime sound");
     lv_obj_set_style_text_color(chimetitle, C_DIM, 0);
     lv_obj_set_style_text_font(chimetitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(chimetitle, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(chimetitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     reg_hint(chimetitle);
     s_chimeSelHl = lv_obj_create(s_chimeSelPage);
     style_highlight(s_chimeSelHl);
@@ -2047,10 +2048,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_chimeSelect().
     }
     lv_obj_t *chimehint = lv_label_create(s_chimeSelPage);
-    lv_label_set_text(chimehint, "turn to preview, push to select");
+    lv_label_set_text(chimehint, orb_ui("turn to preview, push to select"));
     lv_obj_set_style_text_color(chimehint, C_GREY, 0);
     lv_obj_set_style_text_font(chimehint, &lv_font_montserrat_14, 0);
-    lv_obj_align(chimehint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(chimehint, LV_ALIGN_CENTER, 0, ORB_PX(150));
     reg_hint(chimehint);
 
     // --- theme picker page (Display > Theme) ---
@@ -2062,7 +2063,7 @@ void settingsview::init() {
     lv_label_set_text(themetitle, "Theme");
     lv_obj_set_style_text_color(themetitle, C_DIM, 0);
     lv_obj_set_style_text_font(themetitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(themetitle, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(themetitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     reg_hint(themetitle);
     s_themeSelHl = lv_obj_create(s_themeSelPage);
     style_highlight(s_themeSelHl);
@@ -2072,10 +2073,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_themeSelect().
     }
     lv_obj_t *themehint = lv_label_create(s_themeSelPage);
-    lv_label_set_text(themehint, "turn to browse, push to select");
+    lv_label_set_text(themehint, orb_ui("turn to browse, push to select"));
     lv_obj_set_style_text_color(themehint, C_GREY, 0);
     lv_obj_set_style_text_font(themehint, &lv_font_montserrat_14, 0);
-    lv_obj_align(themehint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(themehint, LV_ALIGN_CENTER, 0, ORB_PX(150));
     reg_hint(themehint);
 
     // --- theme restart notice (Display > Theme > pick one) ---
@@ -2105,7 +2106,7 @@ void settingsview::init() {
     lv_label_set_text(designtitle, "Theme");
     lv_obj_set_style_text_color(designtitle, C_DIM, 0);
     lv_obj_set_style_text_font(designtitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(designtitle, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(designtitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     reg_hint(designtitle);
     s_designHl = lv_obj_create(s_designPage);
     style_highlight(s_designHl);
@@ -2115,10 +2116,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_designSelect().
     }
     lv_obj_t *designhint = lv_label_create(s_designPage);
-    lv_label_set_text(designhint, "turn to browse, push to select");
+    lv_label_set_text(designhint, orb_ui("turn to browse, push to select"));
     lv_obj_set_style_text_color(designhint, C_GREY, 0);
     lv_obj_set_style_text_font(designhint, &lv_font_montserrat_14, 0);
-    lv_obj_align(designhint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(designhint, LV_ALIGN_CENTER, 0, ORB_PX(150));
     reg_hint(designhint);
 
     // --- design restart notice (Design > pick one) ---
@@ -2146,7 +2147,7 @@ void settingsview::init() {
     lv_label_set_text(rangetitle, "Range");
     lv_obj_set_style_text_color(rangetitle, C_DIM, 0);
     lv_obj_set_style_text_font(rangetitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(rangetitle, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(rangetitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     reg_hint(rangetitle);
     s_rangeHl = lv_obj_create(s_rangePage);
     style_highlight(s_rangeHl);
@@ -2156,10 +2157,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_range().
     }
     lv_obj_t *rangehint = lv_label_create(s_rangePage);
-    lv_label_set_text(rangehint, "push to cycle how far the scope sees");
+    lv_label_set_text(rangehint, orb_ui("push to cycle how far the scope sees"));
     lv_obj_set_style_text_color(rangehint, C_GREY, 0);
     lv_obj_set_style_text_font(rangehint, &lv_font_montserrat_14, 0);
-    lv_obj_align(rangehint, LV_ALIGN_CENTER, 0, 122);
+    lv_obj_align(rangehint, LV_ALIGN_CENTER, 0, ORB_PX(122));
 
     // --- units menu page (Auto/Metric/Imperial cycle / Back) ---
     s_unitsPage = lv_obj_create(s_screen);
@@ -2170,7 +2171,7 @@ void settingsview::init() {
     lv_label_set_text(unitstitle, "Units");
     lv_obj_set_style_text_color(unitstitle, C_DIM, 0);
     lv_obj_set_style_text_font(unitstitle, &lv_font_montserrat_16, 0);
-    lv_obj_align(unitstitle, LV_ALIGN_CENTER, 0, -122);
+    lv_obj_align(unitstitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));
     reg_hint(unitstitle);
     s_unitsHl = lv_obj_create(s_unitsPage);
     style_highlight(s_unitsHl);
@@ -2180,10 +2181,10 @@ void settingsview::init() {
         // Font, opacity, position: wheel_layout(), called from refresh_units().
     }
     lv_obj_t *unitshint = lv_label_create(s_unitsPage);
-    lv_label_set_text(unitshint, "push to cycle Auto / Metric / Imperial");
+    lv_label_set_text(unitshint, orb_ui("push to cycle Auto / Metric / Imperial"));
     lv_obj_set_style_text_color(unitshint, C_GREY, 0);
     lv_obj_set_style_text_font(unitshint, &lv_font_montserrat_14, 0);
-    lv_obj_align(unitshint, LV_ALIGN_CENTER, 0, 150);
+    lv_obj_align(unitshint, LV_ALIGN_CENTER, 0, ORB_PX(150));
 
     // --- volume page ---
     s_volPage = lv_obj_create(s_screen);
@@ -2195,32 +2196,32 @@ void settingsview::init() {
     lv_label_set_text(vlabel, "Volume");
     lv_obj_set_style_text_color(vlabel, C_WHITE, 0);
     lv_obj_set_style_text_font(vlabel, &lv_font_montserrat_20, 0);
-    lv_obj_align(vlabel, LV_ALIGN_CENTER, 0, -70);
+    lv_obj_align(vlabel, LV_ALIGN_CENTER, 0, ORB_PX(-70));
     lv_obj_t *vtrack = lv_obj_create(s_volPage);
     lv_obj_remove_style_all(vtrack);
-    lv_obj_set_size(vtrack, 240, 18);
-    lv_obj_set_style_radius(vtrack, 9, 0);
+    lv_obj_set_size(vtrack, ORB_PX(240), ORB_PX(18));
+    lv_obj_set_style_radius(vtrack, ORB_PX(9), 0);
     lv_obj_set_style_bg_color(vtrack, C_TRACK, 0);
     lv_obj_set_style_bg_opa(vtrack, LV_OPA_COVER, 0);
     lv_obj_clear_flag(vtrack, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(vtrack, LV_ALIGN_CENTER, 0, 0);
     s_volFill = lv_obj_create(vtrack);
     lv_obj_remove_style_all(s_volFill);
-    lv_obj_set_size(s_volFill, 120, 14);
-    lv_obj_set_style_radius(s_volFill, 7, 0);
+    lv_obj_set_size(s_volFill, ORB_PX(120), ORB_PX(14));
+    lv_obj_set_style_radius(s_volFill, ORB_PX(7), 0);
     lv_obj_set_style_bg_color(s_volFill, C_ACCENT, 0);
     lv_obj_set_style_bg_opa(s_volFill, LV_OPA_COVER, 0);
-    lv_obj_align(s_volFill, LV_ALIGN_LEFT_MID, 2, 0);
+    lv_obj_align(s_volFill, LV_ALIGN_LEFT_MID, ORB_PX(2), 0);
     s_volPct = lv_label_create(s_volPage);
     lv_label_set_text(s_volPct, "--%");
     lv_obj_set_style_text_color(s_volPct, C_WHITE, 0);
     lv_obj_set_style_text_font(s_volPct, &lv_font_montserrat_20, 0);
-    lv_obj_align(s_volPct, LV_ALIGN_CENTER, 0, 50);
+    lv_obj_align(s_volPct, LV_ALIGN_CENTER, 0, ORB_PX(50));
     lv_obj_t *vhint = lv_label_create(s_volPage);
-    lv_label_set_text(vhint, "turn to adjust, push to test");
+    lv_label_set_text(vhint, orb_ui("turn to adjust, push to test"));
     lv_obj_set_style_text_color(vhint, C_GREY, 0);
     lv_obj_set_style_text_font(vhint, &lv_font_montserrat_14, 0);
-    lv_obj_align(vhint, LV_ALIGN_CENTER, 0, 110);
+    lv_obj_align(vhint, LV_ALIGN_CENTER, 0, ORB_PX(110));
 
     // --- About page: the boot splash image, push anywhere to return ---
     s_aboutPage = lv_obj_create(s_screen);
@@ -2259,14 +2260,14 @@ void settingsview::init() {
         lv_obj_set_style_text_color(warn, lv_color_white(), 0);
         lv_obj_set_style_text_font(warn, &lv_font_montserrat_20, 0);
         lv_obj_set_style_text_align(warn, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(warn, LV_ALIGN_CENTER, 0, -30);
+        lv_obj_align(warn, LV_ALIGN_CENTER, 0, ORB_PX(-30));
 
         lv_obj_t *action = lv_label_create(s_resetPage);
-        lv_label_set_text(action, "push to confirm\nturn to cancel");
+        lv_label_set_text(action, orb_ui("push to confirm\nturn to cancel"));
         lv_obj_set_style_text_color(action, lv_color_hex(0xFFB2B2), 0);
         lv_obj_set_style_text_font(action, &lv_font_montserrat_16, 0);
         lv_obj_set_style_text_align(action, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(action, LV_ALIGN_CENTER, 0, 40);
+        lv_obj_align(action, LV_ALIGN_CENTER, 0, ORB_PX(40));
     }
 
     // --- WiFi: scrolling network list (same look as the main menu) ---
@@ -2283,31 +2284,31 @@ void settingsview::init() {
         lv_label_set_text(wtitle, "WiFi");
         lv_obj_set_style_text_color(wtitle, C_DIM, 0);
         lv_obj_set_style_text_font(wtitle, &lv_font_montserrat_20, 0);
-        lv_obj_align(wtitle, LV_ALIGN_CENTER, 0, -122);   // below the persistent "SETTINGS" header
+        lv_obj_align(wtitle, LV_ALIGN_CENTER, 0, ORB_PX(-122));   // below the persistent "SETTINGS" header
 
         s_wifiHl = lv_obj_create(s_wifiListPage);
         lv_obj_remove_style_all(s_wifiHl);
-        lv_obj_set_size(s_wifiHl, 320, 40);
-        lv_obj_set_style_radius(s_wifiHl, 10, 0);
+        lv_obj_set_size(s_wifiHl, ORB_PX(320), ORB_PX(40));
+        lv_obj_set_style_radius(s_wifiHl, ORB_PX(10), 0);
         lv_obj_set_style_bg_color(s_wifiHl, C_HL, 0);
         lv_obj_set_style_bg_opa(s_wifiHl, LV_OPA_COVER, 0);
         for (int r = 0; r < WIFI_VISIBLE; ++r) {
             s_wifiRows[r] = lv_label_create(s_wifiListPage);
             lv_label_set_text(s_wifiRows[r], "");
             lv_label_set_long_mode(s_wifiRows[r], LV_LABEL_LONG_DOT);
-            lv_obj_set_width(s_wifiRows[r], 300);
+            lv_obj_set_width(s_wifiRows[r], ORB_PX(300));
             lv_obj_set_style_text_align(s_wifiRows[r], LV_TEXT_ALIGN_CENTER, 0);
             lv_obj_set_style_text_font(s_wifiRows[r], &lv_font_montserrat_26, 0);
             // Only the selected row ever scrolls (set per-refresh below), so a resting
             // screen stays still. Width is bounded so LVGL knows when to start.
-            lv_obj_set_width(s_wifiRows[r], 400);
+            lv_obj_set_width(s_wifiRows[r], ORB_PX(400));
             lv_obj_align(s_wifiRows[r], LV_ALIGN_CENTER, 0, -(WIFI_VISIBLE - 1) * WIFI_ROW_DY / 2 + r * WIFI_ROW_DY);
         }
         s_wifiListHint = lv_label_create(s_wifiListPage);
         lv_label_set_text(s_wifiListHint, "");
         lv_obj_set_style_text_color(s_wifiListHint, C_GREY, 0);
         lv_obj_set_style_text_font(s_wifiListHint, &lv_font_montserrat_14, 0);
-        lv_obj_align(s_wifiListHint, LV_ALIGN_CENTER, 0, 150);
+        lv_obj_align(s_wifiListHint, LV_ALIGN_CENTER, 0, ORB_PX(150));
     }
 
     // --- WiFi: password entry (character strip, same as the city search) ---
@@ -2323,37 +2324,37 @@ void settingsview::init() {
         s_wifiPassTitle = lv_label_create(s_wifiPassPage);
         lv_label_set_text(s_wifiPassTitle, "Password");
         lv_label_set_long_mode(s_wifiPassTitle, LV_LABEL_LONG_DOT);
-        lv_obj_set_width(s_wifiPassTitle, 300);
+        lv_obj_set_width(s_wifiPassTitle, ORB_PX(300));
         lv_obj_set_style_text_color(s_wifiPassTitle, C_DIM, 0);
         lv_obj_set_style_text_font(s_wifiPassTitle, &lv_font_montserrat_16, 0);
         lv_obj_set_style_text_align(s_wifiPassTitle, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(s_wifiPassTitle, LV_ALIGN_CENTER, 0, -118);   // below the "SETTINGS" header
+        lv_obj_align(s_wifiPassTitle, LV_ALIGN_CENTER, 0, ORB_PX(-118));   // below the "SETTINGS" header
 
         s_passText = lv_label_create(s_wifiPassPage);
         lv_label_set_text(s_passText, "(enter password)");
         lv_label_set_long_mode(s_passText, LV_LABEL_LONG_DOT);
-        lv_obj_set_width(s_passText, 320);
+        lv_obj_set_width(s_passText, ORB_PX(320));
         lv_obj_set_style_text_align(s_passText, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_set_style_text_color(s_passText, C_WHITE, 0);
         lv_obj_set_style_text_font(s_passText, &lv_font_montserrat_20, 0);
-        lv_obj_align(s_passText, LV_ALIGN_CENTER, 0, -70);
+        lv_obj_align(s_passText, LV_ALIGN_CENTER, 0, ORB_PX(-70));
 
         for (int k = 0; k < 7; ++k) {
             s_wkStrip[k] = lv_label_create(s_wifiPassPage);
             lv_label_set_text(s_wkStrip[k], "");
             lv_obj_set_style_text_color(s_wkStrip[k], C_GREY, 0);
             lv_obj_set_style_text_font(s_wkStrip[k], &lv_font_montserrat_18, 0);
-            lv_obj_align(s_wkStrip[k], LV_ALIGN_CENTER, (k - 3) * 48, 20);
+            lv_obj_align(s_wkStrip[k], LV_ALIGN_CENTER, (k - 3) * ORB_PX(48), ORB_PX(20));
         }
         s_wifiPassHint = lv_label_create(s_wifiPassPage);
         lv_label_set_text(s_wifiPassHint, // Names Back as well as OK. The old wording listed only OK, which is the same
         // discoverability gap the Back key was added to close — a way out nobody is told
         // about is a way out nobody finds.
-        "turn to a key, push to enter it\nOK connects, Back returns");
+        orb_ui("turn to a key, push to enter it\nOK connects, Back returns"));
         lv_obj_set_style_text_align(s_wifiPassHint, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_set_style_text_color(s_wifiPassHint, C_GREY, 0);
         lv_obj_set_style_text_font(s_wifiPassHint, &lv_font_montserrat_14, 0);
-        lv_obj_align(s_wifiPassHint, LV_ALIGN_CENTER, 0, 120);
+        lv_obj_align(s_wifiPassHint, LV_ALIGN_CENTER, 0, ORB_PX(120));
     }
 
     // --- WiFi: connect status page ---
@@ -2371,14 +2372,14 @@ void settingsview::init() {
         lv_obj_set_style_text_color(s_wifiStatusLbl, C_WHITE, 0);
         lv_obj_set_style_text_font(s_wifiStatusLbl, &lv_font_montserrat_20, 0);
         lv_obj_set_style_text_align(s_wifiStatusLbl, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(s_wifiStatusLbl, LV_ALIGN_CENTER, 0, -20);
+        lv_obj_align(s_wifiStatusLbl, LV_ALIGN_CENTER, 0, ORB_PX(-20));
 
         s_wifiStatusHint = lv_label_create(s_wifiStatusPage);
         lv_label_set_text(s_wifiStatusHint, "");
         lv_obj_set_style_text_color(s_wifiStatusHint, C_GREY, 0);
         lv_obj_set_style_text_font(s_wifiStatusHint, &lv_font_montserrat_14, 0);
         lv_obj_set_style_text_align(s_wifiStatusHint, LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_align(s_wifiStatusHint, LV_ALIGN_CENTER, 0, 90);
+        lv_obj_align(s_wifiStatusHint, LV_ALIGN_CENTER, 0, ORB_PX(90));
     }
 
     // First boot: seed the recents list so "Recent cities" starts populated.

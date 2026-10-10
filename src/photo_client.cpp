@@ -139,7 +139,7 @@ bool photo_fetch(const char *hex) {
     const char *bare = imgUrl;
     if      (strncmp(bare, "https://", 8) == 0) bare += 8;
     else if (strncmp(bare, "http://",  7) == 0) bare += 7;
-    int canvasW = 232, canvasH = 156;
+    int canvasW = ORB_PX(232), canvasH = ORB_PX(156);
     photo_buffer(&canvasW, &canvasH);                 // resize to fit the canvas (preserve aspect)
     char proxUrl[256];
     snprintf(proxUrl, sizeof(proxUrl),

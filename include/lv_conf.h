@@ -105,6 +105,34 @@
 /*==================
    FONTS
  *==================*/
+/* The Big Orb (800 px, -DORB_SCREEN_PX=800) switches every built-in Montserrat off and links
+   its own from src/bigorb_fonts/ under the SAME names, each drawn ORB_PX(n) px tall: 16 is 27,
+   48 is 82. Code that asks for lv_font_montserrat_16 means "the 16 rung", and on the bigger
+   panel that rung is simply bigger. The 466 Orb keeps LVGL's own, byte for byte. */
+#if defined(ORB_SCREEN_PX) && ORB_SCREEN_PX == 800
+#define LV_FONT_MONTSERRAT_12 0
+#define LV_FONT_MONTSERRAT_14 0
+#define LV_FONT_MONTSERRAT_16 0
+#define LV_FONT_MONTSERRAT_18 0
+#define LV_FONT_MONTSERRAT_20 0
+#define LV_FONT_MONTSERRAT_22 0
+#define LV_FONT_MONTSERRAT_24 0
+#define LV_FONT_MONTSERRAT_26 0
+#define LV_FONT_MONTSERRAT_28 0
+#define LV_FONT_MONTSERRAT_32 0
+#define LV_FONT_MONTSERRAT_36 0
+#define LV_FONT_MONTSERRAT_40 0
+#define LV_FONT_MONTSERRAT_44 0
+#define LV_FONT_MONTSERRAT_48 0
+#define LV_FONT_CUSTOM_DECLARE \
+    LV_FONT_DECLARE(lv_font_montserrat_12) LV_FONT_DECLARE(lv_font_montserrat_14) \
+    LV_FONT_DECLARE(lv_font_montserrat_16) LV_FONT_DECLARE(lv_font_montserrat_18) \
+    LV_FONT_DECLARE(lv_font_montserrat_20) LV_FONT_DECLARE(lv_font_montserrat_22) \
+    LV_FONT_DECLARE(lv_font_montserrat_24) LV_FONT_DECLARE(lv_font_montserrat_26) \
+    LV_FONT_DECLARE(lv_font_montserrat_28) LV_FONT_DECLARE(lv_font_montserrat_32) \
+    LV_FONT_DECLARE(lv_font_montserrat_36) LV_FONT_DECLARE(lv_font_montserrat_40) \
+    LV_FONT_DECLARE(lv_font_montserrat_44) LV_FONT_DECLARE(lv_font_montserrat_48)
+#else
 #define LV_FONT_MONTSERRAT_12 1
 #define LV_FONT_MONTSERRAT_14 1
 #define LV_FONT_MONTSERRAT_16 1
@@ -124,6 +152,7 @@
 #define LV_FONT_MONTSERRAT_40 1
 #define LV_FONT_MONTSERRAT_44 1
 #define LV_FONT_MONTSERRAT_48 1   /* big clock face (app shell), and the top of the ladder */
+#endif
 #define LV_FONT_DEFAULT &lv_font_montserrat_14
 
 /*==================

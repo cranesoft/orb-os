@@ -102,9 +102,9 @@ static constexpr float CX = SCREEN_CX;   // 233 (main dial centre)
 static constexpr float CY = SCREEN_CY;   // 233
 static constexpr float DEG2RAD = 3.14159265358979f / 180.0f;
 
-static constexpr int DATE_WIN_X = 233;   // Imperial date-window centre
-static constexpr int DATE_WIN_Y = 328;
-static constexpr float AVI_DATE_R    = 184.0f;  // date banner arc radius from the centre
+static constexpr int DATE_WIN_X = SCREEN_CX;   // Imperial date-window centre
+static constexpr int DATE_WIN_Y = ORB_PX(328);
+static constexpr float AVI_DATE_R    = ORB_PXF(184.0f);  // date banner arc radius from the centre
 static constexpr float AVI_DATE_MID  = 180.0f;  // centred at 6 o'clock
 static constexpr float AVI_DATE_STEP = 4.0f;    // degrees between characters
 
@@ -129,8 +129,8 @@ static lv_obj_t   *s_minShadow  = nullptr;   // (fixed light direction, so it do
 // Shadow offset: a fixed screen-space translation (not rotated with the hand), simulating
 // a light source raising the hand slightly off the dial. Points toward the 7-o'clock mark
 // (210 deg clockwise from 12): dx = sin(210deg), dy = -cos(210deg).
-static constexpr float HAND_SHADOW_DX = -4.0f;
-static constexpr float HAND_SHADOW_DY =  7.0f;
+static constexpr float HAND_SHADOW_DX = ORB_PXF(-4.0f);
+static constexpr float HAND_SHADOW_DY =  ORB_PXF(7.0f);
 
 // ---- drawing helpers --------------------------------------------------------
 static inline lv_point_t P(float x, float y) {
@@ -163,7 +163,7 @@ static void draw_hand_at(float pxc, float pyc, float angDeg, float len, float ta
 // Hand with a thin contrasting outline (fill drawn over a slightly larger edge).
 static void draw_hand_edged(float pxc, float pyc, float angDeg, float len, float tail,
                             float hw, lv_color_t fill, lv_color_t edge) {
-    draw_hand_at(pxc, pyc, angDeg, len + 1.5f, tail + 1.5f, hw + 1.4f, edge);
+    draw_hand_at(pxc, pyc, angDeg, len + ORB_PXF(1.5f), tail + ORB_PXF(1.5f), hw + ORB_PXF(1.4f), edge);
     draw_hand_at(pxc, pyc, angDeg, len,        tail,        hw,        fill);
 }
 
@@ -215,20 +215,20 @@ static void draw_imperial(const struct tm *ti) {
         ld.color = COL_DATE;
         ld.font  = &lv_font_montserrat_20;
         ld.align = LV_TEXT_ALIGN_CENTER;
-        lv_canvas_draw_text(s_canvas, DATE_WIN_X - 24, DATE_WIN_Y - 12, 48, &ld, ds);
+        lv_canvas_draw_text(s_canvas, DATE_WIN_X - ORB_PX(24), DATE_WIN_Y - ORB_PX(12), ORB_PX(48), &ld, ds);
     }
 
     const float sec  = ti->tm_sec;
     const float mins = ti->tm_min + sec / 60.0f;
     const float hrs  = (ti->tm_hour % 12) + mins / 60.0f;
 
-    draw_hand_edged(CX, CY, hrs  * 30.0f, 116, 20, 7.0f, COL_HAND, COL_HAND_EDGE);
-    draw_hand_edged(CX, CY, mins * 6.0f,  190, 26, 5.5f, COL_HAND, COL_HAND_EDGE);
+    draw_hand_edged(CX, CY, hrs  * 30.0f, ORB_PXF(116), ORB_PXF(20), ORB_PXF(7.0f), COL_HAND, COL_HAND_EDGE);
+    draw_hand_edged(CX, CY, mins * 6.0f,  ORB_PXF(190), ORB_PXF(26), ORB_PXF(5.5f), COL_HAND, COL_HAND_EDGE);
 
-    draw_needle_at(CX, CY, sec * 6.0f, 196, 48, 4, COL_HAND_EDGE);
-    draw_needle_at(CX, CY, sec * 6.0f, 196, 48, 2, COL_HAND);
-    draw_disc(CX, CY, 8, COL_HAND);
-    draw_disc(CX, CY, 3, COL_BLACK);
+    draw_needle_at(CX, CY, sec * 6.0f, ORB_PXF(196), ORB_PXF(48), ORB_PXF(4), COL_HAND_EDGE);
+    draw_needle_at(CX, CY, sec * 6.0f, ORB_PXF(196), ORB_PXF(48), ORB_PXF(2), COL_HAND);
+    draw_disc(CX, CY, ORB_PXF(8), COL_HAND);
+    draw_disc(CX, CY, ORB_PXF(3), COL_BLACK);
 }
 
 // Draw text curved along an arc centred at (cx,cy), radius R, centred on midDeg
@@ -247,7 +247,7 @@ static void draw_arc_text(float cx, float cy, float R, float midDeg, float stepD
         const float x = cx + R * sinf(a);
         const float y = cy - R * cosf(a);
         char c[2] = { txt[i], 0 };
-        lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(x - 12), (lv_coord_t)lroundf(y - halfH), 24, &ld, c);
+        lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(x - ORB_PXF(12)), (lv_coord_t)lroundf(y - halfH), ORB_PX(24), &ld, c);
     }
 }
 
@@ -272,13 +272,13 @@ static void draw_aviator(const struct tm *ti) {
     const float hrs  = (ti->tm_hour % 12) + mins / 60.0f;
 
     // red small seconds in the sub-dial — drawn first so the hour/minute hands sit on top
-    draw_needle_at(AVI_SUB_X, AVI_SUB_Y, sec * 6.0f, 44, 10, 2, COL_RED);
-    draw_disc(AVI_SUB_X, AVI_SUB_Y, 3, COL_RED);
+    draw_needle_at(AVI_SUB_X, AVI_SUB_Y, sec * 6.0f, ORB_PXF(44), ORB_PXF(10), ORB_PXF(2), COL_RED);
+    draw_disc(AVI_SUB_X, AVI_SUB_Y, ORB_PXF(3), COL_RED);
 
     // centre boss on the canvas, under the hand sprites — it shows through the ring holes
     // as the centre pin
-    draw_disc(CX, CY, 9, COL_LUME_EDGE);
-    draw_disc(CX, CY, 5, COL_GOLD);
+    draw_disc(CX, CY, ORB_PXF(9), COL_LUME_EDGE);
+    draw_disc(CX, CY, ORB_PXF(5), COL_GOLD);
 
     // gold Breguet hour + minute hands: the owner's real hands (two distinct cropped
     // shapes — trefoil-tip hour, lance-tip minute — not one shape scaled), each rotated
@@ -331,10 +331,10 @@ static void draw_digital(const struct tm *ti) {
 
     // --- time HH:MM (24-hour), the hero element, upper-centre -----------------
     const int digits[4] = { ti->tm_hour/10, ti->tm_hour%10, ti->tm_min/10, ti->tm_min%10 };
-    const float w = 72, h = 150, t = 16, gap = 12, colonW = 24;
+    const float w = ORB_PXF(72), h = ORB_PXF(150), t = ORB_PXF(16), gap = ORB_PXF(12), colonW = ORB_PXF(24);
     const float totalW = 4 * w + 4 * gap + colonW;
     float x  = (SCREEN_W - totalW) * 0.5f;
-    const float oy = 108;
+    const float oy = ORB_PXF(108);
 
     draw_seg_cell(x, oy, w, h, t, SEG[digits[0]]); x += w + gap;
     draw_seg_cell(x, oy, w, h, t, SEG[digits[1]]); x += w + gap;
@@ -349,7 +349,7 @@ static void draw_digital(const struct tm *ti) {
     // --- weekday strip MO..SU, today lit and underlined, the rest dim ----------
     static const char *WD[7] = { "MO", "TU", "WE", "TH", "FR", "SA", "SU" };
     const int today = (ti->tm_wday + 6) % 7;   // tm_wday: 0=Sun; strip is Monday-first
-    const float wy = 296, cellW = 52, stripW = cellW * 7;
+    const float wy = ORB_PXF(296), cellW = ORB_PXF(52), stripW = cellW * 7;
     const float sx = (SCREEN_W - stripW) * 0.5f;
     lv_draw_label_dsc_t wl;
     lv_draw_label_dsc_init(&wl);
@@ -360,7 +360,7 @@ static void draw_digital(const struct tm *ti) {
         lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(sx + i * cellW),
                             (lv_coord_t)lroundf(wy), (lv_coord_t)lroundf(cellW), &wl, WD[i]);
     }
-    draw_round_rect(sx + today * cellW + 10, wy + 24, cellW - 20, 3, 1.5f, COL_WK_ON);
+    draw_round_rect(sx + today * cellW + ORB_PXF(10), wy + ORB_PXF(24), cellW - ORB_PXF(20), ORB_PXF(3), ORB_PXF(1.5f), COL_WK_ON);
 
     // --- date: DD (seven-segment) + month abbreviation (bright caps) -----------
     const int dd[2] = { ti->tm_mday/10, ti->tm_mday%10 };
@@ -368,13 +368,13 @@ static void draw_digital(const struct tm *ti) {
     strftime(mon, sizeof(mon), "%b", ti);
     for (char *p = mon; *p; ++p) *p = (char)toupper((unsigned char)*p);
 
-    const float dw = 40, dh = 66, dt = 9, dgap = 8, groupGap = 22;
+    const float dw = ORB_PXF(40), dh = ORB_PXF(66), dt = ORB_PXF(9), dgap = ORB_PXF(8), groupGap = ORB_PXF(22);
     lv_point_t msz;
     lv_txt_get_size(&msz, mon, &lv_font_montserrat_28, 0, 0, LV_COORD_MAX, 0);
     const float dnumW = 2 * dw + dgap;
     const float groupW = dnumW + groupGap + msz.x;
     float gx = (SCREEN_W - groupW) * 0.5f;
-    const float gy = 352;
+    const float gy = ORB_PXF(352);
 
     draw_seg_cell(gx, gy, dw, dh, dt, SEG[dd[0]]); gx += dw + dgap;
     draw_seg_cell(gx, gy, dw, dh, dt, SEG[dd[1]]); gx += dw;
@@ -386,7 +386,7 @@ static void draw_digital(const struct tm *ti) {
     md.align = LV_TEXT_ALIGN_LEFT;
     const float monY = gy + (dh - lv_font_get_line_height(&lv_font_montserrat_28)) * 0.5f;
     lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(gx + groupGap),
-                        (lv_coord_t)lroundf(monY), (lv_coord_t)lroundf(msz.x + 8), &md, mon);
+                        (lv_coord_t)lroundf(monY), (lv_coord_t)lroundf(msz.x + ORB_PXF(8)), &md, mon);
 }
 
 // ---- OFFICE face (modern/light — see app_theme.h) ---------------------------
@@ -504,13 +504,13 @@ static void draw_office(const struct tm *ti) {
     lv_point_t hsz, msz;
     lv_txt_get_size(&hsz, hh, &lv_font_montserrat_48, 0, 0, LV_COORD_MAX, 0);
     lv_txt_get_size(&msz, mm, &lv_font_montserrat_48, 0, 0, LV_COORD_MAX, 0);
-    const float handGap = 34.0f;   // room for the hands' pivot dot between HH and MM
+    const float handGap = ORB_PXF(34.0f);   // room for the hands' pivot dot between HH and MM
 
     // Pivot at the dial's TRUE centre — the reference's dot sits right there, not offset.
     // Time, then date, then the pivot, strictly stacked top-to-bottom with no overlap.
     const float handY     = CY;
-    const float pivotGap  = 30.0f;   // date line -> pivot
-    const float dateGap   = 14.0f;   // time digits -> date line
+    const float pivotGap  = ORB_PXF(30.0f);   // date line -> pivot
+    const float dateGap   = ORB_PXF(14.0f);   // time digits -> date line
     const float dateLineH = lv_font_get_line_height(&lv_font_montserrat_20);
     const float dateY     = handY - pivotGap - dateLineH;
     const float textY     = dateY - dateGap - hsz.y;
@@ -530,9 +530,9 @@ static void draw_office(const struct tm *ti) {
     td.color = pal.ink;
     td.align = LV_TEXT_ALIGN_LEFT;
     lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(startX), (lv_coord_t)lroundf(textY),
-                        (lv_coord_t)lroundf(hsz.x + 4), &td, hh);
+                        (lv_coord_t)lroundf(hsz.x + ORB_PXF(4)), &td, hh);
     lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(startX + hsz.x + handGap), (lv_coord_t)lroundf(textY),
-                        (lv_coord_t)lroundf(msz.x + 4), &td, mm);
+                        (lv_coord_t)lroundf(msz.x + ORB_PXF(4)), &td, mm);
 
     // Both hands: baked sprites (see office_sprite.h), rotated and alpha-blended directly
     // into the canvas buffer — NOT separate lv_img objects. LVGL's normal lv_img-over-
@@ -557,7 +557,7 @@ static void draw_office(const struct tm *ti) {
     dd.font  = &lv_font_montserrat_20;
     dd.color = pal.soft;
     dd.align = LV_TEXT_ALIGN_CENTER;
-    lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(CX - 200), (lv_coord_t)lroundf(dateY), 400, &dd, dateStr);
+    lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(CX - ORB_PXF(200)), (lv_coord_t)lroundf(dateY), ORB_PX(400), &dd, dateStr);
 }
 
 // ---- CUSTOM face (pushed from Launch Kit) -----------------------------------
@@ -675,7 +675,7 @@ static void draw_baked_text(const lv_font_t *font, const char *fmt, int bx, int 
         // draws a rounded rectangle in one pass. So does this: one coverage value per pixel,
         // rounded corners included, blended once.
         const lv_coord_t lh = (lv_coord_t)lv_font_get_line_height(font);
-        fill_plate((int)lroundf(startX) - 8, y0 - 2, (int)lroundf(total) + 16, lh + 4,
+        fill_plate((int)lroundf(startX) - ORB_PX(8), y0 - ORB_PX(2), (int)lroundf(total) + ORB_PX(16), lh + ORB_PX(4),
                    bgRadius, lv_color_hex(bg), (lv_opa_t)bgOpa);
     }
     lv_draw_label_dsc_t ld;
@@ -687,7 +687,7 @@ static void draw_baked_text(const lv_font_t *font, const char *fmt, int bx, int 
         float x = startX;
         for (int i = 0; i < n && i < 48; ++i) {
             char c[2] = { buf[i], 0 };
-            lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(x) + ox, y0 + oy, (lv_coord_t)lroundf(w[i] + 4), &ld, c);
+            lv_canvas_draw_text(s_canvas, (lv_coord_t)lroundf(x) + ox, y0 + oy, (lv_coord_t)lroundf(w[i] + ORB_PXF(4)), &ld, c);
             x += w[i];
         }
     };

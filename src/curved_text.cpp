@@ -1,4 +1,5 @@
 #include "curved_text.h"
+#include "config.h"
 #include "diag_log.h"   // the arc guard below says the fault out loud
 #include <math.h>
 #include <string.h>
@@ -233,7 +234,7 @@ static void straight_line_impl(const curved_text::Target &dst, const lv_font_t *
     // one is an LVGL label with LVGL's own padding and the two have to look like the same
     // control when a design moves a line from one screen to another.
     if (pill.opa) {
-        const float padX = 8.0f, padY = 2.0f;
+        const float padX = ORB_PXF(8.0f), padY = ORB_PXF(2.0f);
         fill_round_rect(dst,
                         (int)lroundf(startX - padX), (int)lroundf(by - lineH / 2.0f - padY),
                         (int)lroundf(startX + total + padX), (int)lroundf(by + lineH / 2.0f + padY),

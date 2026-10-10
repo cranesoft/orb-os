@@ -46,6 +46,7 @@
 //     CUSTOM_HAS_RADAR_STYLE) and the menu's three per-slot gates. Those are the next
 //     migration, not a standing limitation.
 #include <lvgl.h>
+#include "config.h"   // ORB_PX: every pixel default below scales with the panel
 
 namespace theme_style {
 
@@ -439,8 +440,8 @@ struct ClockText {
     // carries have no uppercase form for anything outside it. See orb_text_case.h.
     bool     upper  = false;
     bool     show   = false;
-    int      x      = 233;
-    int      y      = 233;
+    int      x = ORB_PX(233);
+    int      y = ORB_PX(233);
     uint32_t color  = 0xF2F5F9;
     // 0..255. Costs nothing: both glyph blitters already multiply every pixel by an
     // opacity and the value was simply pinned at full, and LVGL labels alpha-blend for
@@ -455,7 +456,7 @@ struct ClockText {
     // different days. bgOpa defaults to 0, so a theme that never asked for one is unchanged.
     uint32_t bg     = 0x000000;
     int      bgOpa  = 0;     // 0..255, 0 = no plate at all
-    int      radius = 4;     // corner rounding, px
+    int      radius = ORB_PX(4);     // corner rounding, px
     bool     curved = false;
     int      curveR = 0;
     float    arcDeg = 0.0f;
@@ -470,7 +471,7 @@ struct ClockText {
 struct Hand {
     bool show    = false;
     int  pivotX  = 0,   pivotY  = 0;
-    int  centerX = 233, centerY = 233;
+    int  centerX = ORB_PX(233), centerY = ORB_PX(233);
     int  blend   = 0;
 };
 
@@ -572,8 +573,8 @@ struct Clock {
     // the artwork. Exactly the pair a hand carries, and for the same reason: the picture is
     // trimmed to its ink, so the pivot has to travel with the crop or the crank wobbles
     // instead of turning.
-    int       windCrankX    = 233;   // on the dial
-    int       windCrankY    = 233;
+    int       windCrankX = ORB_PX(233);   // on the dial
+    int       windCrankY = ORB_PX(233);
     int       windCrankPX   = 0;     // in the artwork's own pixels
     int       windCrankPY   = 0;
     // Where the crank sits at rest, in degrees clockwise from the artwork's own orientation.
@@ -602,20 +603,20 @@ struct Clock {
     uint32_t  windBg        = 0x000000;
     uint32_t  windRingTrack = 0x22282F;
     uint32_t  windRingFill  = 0xD8B56A;
-    int       windRingWidth = 8;
-    int       windRingR     = 212;   // px from the middle to the ring's centre line
+    int       windRingWidth = ORB_PX(8);
+    int       windRingR = ORB_PX(212);   // px from the middle to the ring's centre line
     // Left and right margins per line, the band it may use, exactly as the News screen sets
     // its headlines. They decide where the words WRAP, so a line with no room breaks earlier
     // rather than running off a round screen, and an uneven pair shifts the block sideways.
     // THEME_CAPS 42 with the typefaces, because a face and the width it wraps at are the same
     // decision made twice if they arrive separately.
-    int       windTitleML = 60, windTitleMR = 60;
-    int       windAskML   = 83, windAskMR   = 83;
+    int       windTitleML = ORB_PX(60), windTitleMR = ORB_PX(60);
+    int       windAskML = ORB_PX(83), windAskMR = ORB_PX(83);
     int       windTurnsML = 60, windTurnsMR = 60;
     char      windTitle[64] = "The clock has\nwound down";
-    int       windTitleSize = 28;
+    int       windTitleSize = ORB_PX(28);
     uint32_t  windTitleCol  = 0xFFFFFF;
-    int       windTitleY    = -84;   // px from the middle, negative is up
+    int       windTitleY = ORB_PX(-84);   // px from the middle, negative is up
     // How solid each wind line is, 0-255. THEME_CAPS 48.
     //
     // Every other themed text on this device has carried an opacity since August, and these
@@ -628,9 +629,9 @@ struct Clock {
     // written before this changes.
     int       windTitleOpa = 255, windAskOpa = 255, windTurnsOpa = 255;
     char      windAsk[96]   = "Please wind the clock using the knob";
-    int       windAskSize   = 20;
+    int       windAskSize = ORB_PX(20);
     uint32_t  windAskCol    = 0x9AA4B0;
-    int       windAskY      = 8;
+    int       windAskY = ORB_PX(8);
     bool      windTurnsShow = true;
     int       windTurnsSize = 16;
     uint32_t  windTurnsCol  = 0x5A636E;
@@ -677,20 +678,20 @@ struct Ticker {
     // The focused quote: name, price, change. Three text elements, each with the same
     // controls every other text element on this device has.
     uint32_t nameColor    = 0x8A94A6;
-    int      nameSize     = 16;
-    int      nameY        = 186;
+    int      nameSize = ORB_PX(16);
+    int      nameY = ORB_PX(186);
     bool     nameShow     = true;
 
-    int      priceSize    = 40;
-    int      priceY       = 222;
+    int      priceSize = ORB_PX(40);
+    int      priceY = ORB_PX(222);
     bool     priceShow    = true;
     // Off means the price is drawn in the up/down colour with everything else, which is the
     // livelier look; on lets a design hold the price steady and let only the change move.
     bool     priceColorOn = false;
     uint32_t priceColor   = 0xE8ECF1;
 
-    int      changeSize   = 22;
-    int      changeY      = 286;
+    int      changeSize = ORB_PX(22);
+    int      changeY = ORB_PX(286);
     bool     changeShow   = true;
     bool     changePct    = true;   // show the percentage as well as the absolute move
 
@@ -699,12 +700,12 @@ struct Ticker {
     enum StripPlace : uint8_t { STRIP_BOTTOM = 0, STRIP_TOP = 1, STRIP_CURVED = 2 };
     bool     stripShow    = true;
     uint8_t  stripPlace   = STRIP_CURVED;
-    int      stripSize    = 16;
+    int      stripSize = ORB_PX(16);
     uint32_t stripColor   = 0xC8D0DA;
     int      stripOpa     = 235;
     int      stripSpeed   = 26;    // px/sec, or degrees/sec when curved
-    int      stripY       = 392;   // flat placements only
-    int      stripRadius  = 196;   // curved only
+    int      stripY = ORB_PX(392);   // flat placements only
+    int      stripRadius = ORB_PX(196);   // curved only
     int      stripAngle   = 0;     // curved only: where the middle of the window sits, 0 = top
     bool     stripUpDown  = true;  // colour each entry by its own direction
 };
@@ -770,8 +771,8 @@ struct TextSlot {
     // carries have no uppercase form for anything outside it. See orb_text_case.h.
     bool     upper  = false;
     bool     show   = false;
-    int      x      = 233;
-    int      y      = 233;
+    int      x = ORB_PX(233);
+    int      y = ORB_PX(233);
     uint32_t color  = 0xFFFFFF;
     // 0..255. Costs nothing: both glyph blitters already multiply every pixel by an
     // opacity and the value was simply pinned at full, and LVGL labels alpha-blend for
@@ -786,7 +787,7 @@ struct TextSlot {
     // different days. bgOpa defaults to 0, so a theme that never asked for one is unchanged.
     uint32_t bg     = 0x000000;
     int      bgOpa  = 0;     // 0..255, 0 = no plate at all
-    int      radius = 4;     // corner rounding, px
+    int      radius = ORB_PX(4);     // corner rounding, px
     bool     curved = false;
     int      curveR = 0;
     float    arcDeg = 0.0f;
@@ -804,10 +805,10 @@ using RadarText = TextSlot;
 struct RadarCard {
     bool     enabled    = false;
     bool     typeImage  = false;
-    int      radius     = 120;   // px from the scope's centre to the card's centre
-    int      w          = 150;   // vector card size; an image card uses its own pixels
-    int      h          = 60;
-    int      corner     = 10;    // vector corner rounding
+    int      radius = ORB_PX(120);   // px from the scope's centre to the card's centre
+    int      w = ORB_PX(150);   // vector card size; an image card uses its own pixels
+    int      h = ORB_PX(60);
+    int      corner = ORB_PX(10);    // vector corner rounding
     uint32_t color      = 0x101418;
     int      opacity    = 220;   // 0..255
     uint32_t borderColor = 0x39FF8A;
@@ -820,8 +821,8 @@ struct RadarCard {
 // radar_style.json just leaves it hidden (show=false), not mis-positioned.
 struct RadarStatic {
     bool  show = false;
-    int   x = 233;
-    int   y = 233;
+    int   x = ORB_PX(233);
+    int   y = ORB_PX(233);
     int   opacity = 255;
     float scale = 1.0f;
 };
@@ -840,7 +841,7 @@ struct RadarStatic {
 // border overlay, which is another layer above the movers and another 24%.
 static constexpr int MAX_ZONES = 6;
 struct Zone {
-    int  x = 233, y = 233;
+    int  x = ORB_PX(233), y = ORB_PX(233);
     int  r = 0;                 // circle radius, when rect is false
     int  w = 0, h = 0;          // full width/height centred on x,y, when rect is true
     bool rect   = false;
@@ -866,10 +867,10 @@ struct Weather {
     uint32_t sweepLeadColor  = 0xDCEBF7;
     int      sweepTrailDeg   = 38;
     int      sweepOpacity    = 55;      // 0..100
-    int      sweepLength     = 233;
+    int      sweepLength = ORB_PX(233);
     int      sweepSpeed      = 45;      // deg/sec
-    int      sweepTrailWidth = 5;
-    int      sweepLeadWidth  = 2;
+    int      sweepTrailWidth = ORB_PX(5);
+    int      sweepLeadWidth = ORB_PX(2);
     int      sweepTrailSteps = 20;
     // The rings and the road overlay, which the map draws for itself rather than borrowing.
     // ringColorOn is off by default and that is deliberate. These rings were drawn in
@@ -886,7 +887,7 @@ struct Weather {
     // same dial and there was no reason for one to be adjustable and the other not. Defaults
     // reproduce the three fixed circles this screen drew before they were controls.
     int      ringCount       = 3;      // 1..5, spread evenly out to the rim
-    int      ringWidth       = 1;      // px
+    int      ringWidth = ORB_PX(1);      // px
     int      ringOpacity     = 180;    // 0..255
     bool     crosshair       = false;  // off by default: this screen has never had one
     uint32_t roadColor       = 0x4A4A4A;
@@ -921,8 +922,8 @@ struct Weather {
         // already writes this line in capitals ("RAINVIEWER", "RADAR 12:04 | RAINVIEWER"),
         // so the switch every other text slot gained at THEME_CAPS 53 would have been a
         // control that changed nothing. Studio does not offer it here either.
-        int      x       = 233;
-        int      y       = 382;
+        int      x = ORB_PX(233);
+        int      y = ORB_PX(382);
         uint32_t color   = 0x9AA0A6;
         int      opa     = 255;   // clamped to CREDIT_MIN_OPA on the way in
         uint32_t bg      = 0x000000;
@@ -930,7 +931,7 @@ struct Weather {
         // that starts clear. This was 170, which made the credit the one line on the device
         // that arrived wearing something nobody had asked for.
         int      bgOpa   = 0;
-        int      radius  = 4;
+        int      radius = ORB_PX(4);
         int      align   = 1;     // 0 left, 1 centre, 2 right
         // Curved, like every other text element on this device. ONLY WITHOUT THE PILL, and
         // that is a real constraint rather than a missing feature: the pill is a rounded
@@ -939,7 +940,7 @@ struct Weather {
         // Orb Studio only offers the switch once the pill is off, and the firmware treats
         // curved as the winner if a hand-written theme asks for both.
         bool     curved  = false;
-        int      curveR  = 180;   // px from the centre it orbits
+        int      curveR = ORB_PX(180);   // px from the centre it orbits
         int      arcDeg  = 180;   // where round the dial it sits, 0 = twelve o'clock
     };
     static constexpr int CREDIT_MIN_OPA = 128;   // half. Below this it stops being a credit.
@@ -959,20 +960,20 @@ struct Radar {
     uint32_t sweepLeadColor  = 0xC8FFB0;
     int      sweepTrailDeg   = 38;
     int      sweepOpacity    = 60;    // 0..100
-    int      sweepLength     = 233;
+    int      sweepLength = ORB_PX(233);
     int      sweepSpeed      = 45;
     // The trail's own line work, hard-coded until now (a 5 px trail of 20 steps behind a
     // 2 px leading edge). Defaults below are exactly those numbers, so a theme that does
     // not mention them looks the same as it always did.
-    int      sweepTrailWidth = 5;     // px, thickness of each trail line
-    int      sweepLeadWidth  = 2;     // px, thickness of the solid leading edge
+    int      sweepTrailWidth = ORB_PX(5);     // px, thickness of each trail line
+    int      sweepLeadWidth = ORB_PX(2);     // px, thickness of the solid leading edge
     int      sweepTrailSteps = 20;    // how many lines the fading wedge is made of
 
     bool     blipEnabled     = true;  // new with this field — see RadarStatic above for why there's no compiled-macro fallback
     bool     blipTypeImage   = false;
     bool     blipRotate      = true;  // new with this field — see RadarStatic above for why there's no compiled-macro fallback
     bool     blipKiteShape   = false;
-    int      blipSize        = 9;
+    int      blipSize = ORB_PX(9);
     int      blipKiteT       = 0;     // 0..100
     bool     blipFixedColorMode = false;
     uint32_t blipFixedColor  = 0x39FF14;
@@ -996,12 +997,12 @@ struct Radar {
 
     bool     offRangeEnabled = true;
     uint32_t offRangeColor   = 0xFF9D3C;
-    int      offRangeSize    = 5;
+    int      offRangeSize = ORB_PX(5);
 
     bool     centerEnabled     = true;  // new with this field — see RadarStatic above for why there's no compiled-macro fallback
-    int      centerRadius      = 6;
+    int      centerRadius = ORB_PX(6);
     uint32_t centerColor       = 0xFF9D3C;
-    int      centerInnerRadius = 2;
+    int      centerInnerRadius = ORB_PX(2);
     uint32_t centerInnerColor  = 0x0B1F0F;
 
     RadarText rtext[4];
@@ -1049,7 +1050,7 @@ struct Radar {
     // Was CUSTOM_RADAR_DEADZONE_PX, and it was the one operational value with no
     // device-side control at all, so a files-only theme could neither state it nor work
     // around not being able to.
-    int      deadZonePx      = -1;
+    int      deadZonePx = -1;
     // Synthesised traffic instead of the live feed. For judging a design without waiting
     // on whatever happens to be overhead, and for watching masking behave against motion
     // that is predictable rather than whatever the sky is doing.
@@ -1067,12 +1068,12 @@ struct Radar {
     // else's artwork — which is not a subtle fault: a hand pivoting 40 px off its hub
     // wobbles instead of turning. -1 keeps the welded value, so an older theme is
     // unaffected.
-    int      sweepPivotX     = -1;
-    int      sweepPivotY     = -1;
-    int      sweepCenterX    = -1;   // where on the dial that pivot sits
-    int      sweepCenterY    = -1;
-    int      blipPivotX      = -1;
-    int      blipPivotY      = -1;
+    int      sweepPivotX = -1;
+    int      sweepPivotY = -1;
+    int      sweepCenterX = -1;   // where on the dial that pivot sits
+    int      sweepCenterY = -1;
+    int      blipPivotX = -1;
+    int      blipPivotY = -1;
 
     // Exclusion zones: circles on the 466x466 dial where aircraft are not drawn.
     //
@@ -1119,14 +1120,14 @@ struct Radar {
     bool     ringsPlate      = false;
 
     // How heavy the roads are, in pixels. Welded at 1 until THEME_CAPS 7.
-    int      mapRoadWidth    = 1;
+    int      mapRoadWidth = ORB_PX(1);
 
     // The sweep's hub: the disc at the point the hand turns about. Drawn as part of the
     // sweep layer, so it travels with the hand through the stack rather than sitting at a
     // fixed depth. Off by default, which is what every theme made before this looked like.
     bool     sweepHubOn      = false;
     uint32_t sweepHubColor   = 0x39FF8A;
-    int      sweepHubRadius  = 6;
+    int      sweepHubRadius = ORB_PX(6);
     int      sweepHubGlow    = 0;      // px of halo beyond the disc, 0 = none
     uint32_t sweepHubGlowColor = 0x39FF8A;
 };
@@ -1137,8 +1138,8 @@ struct MenuText {
     // carries have no uppercase form for anything outside it. See orb_text_case.h.
     bool     upper  = false;
     bool     show  = false;
-    int      x     = 233;
-    int      y     = 233;
+    int      x = ORB_PX(233);
+    int      y = ORB_PX(233);
     uint32_t color = 0xFFFFFF;
     int      opa    = 255;   // 0..255, see THEME_CAPS 18
     int      glow  = 0;
@@ -1186,9 +1187,9 @@ struct Settings {
     bool     hlShow       = true;
     uint32_t hlColor      = 0x232A36;
     int      hlOpacity    = 255;
-    int      hlW          = 300;
-    int      hlH          = 44;
-    int      hlRadius     = 10;
+    int      hlW = ORB_PX(300);
+    int      hlH = ORB_PX(44);
+    int      hlRadius = ORB_PX(10);
     int      defaultSel   = 0;
 };
 
@@ -1203,11 +1204,11 @@ struct SplashText {
     // reaches live text as well as literal text; ASCII only, because the faces this device
     // carries have no uppercase form for anything outside it. See orb_text_case.h.
     bool     upper  = false;
-    int      x         = 233;
-    int      y         = 233;
+    int      x = ORB_PX(233);
+    int      y = ORB_PX(233);
     // From the compiled ladder in lv_conf.h only. LVGL fonts are glyph bitmaps, not
     // outlines, so a size the binary was not built with cannot be drawn at any quality.
-    int      size      = 14;
+    int      size = ORB_PX(14);
     uint32_t color     = 0xFFFFFF;
     int      opa    = 255;   // 0..255, see THEME_CAPS 18
     int      glow      = 0;
@@ -1219,7 +1220,7 @@ struct SplashText {
     // different days. bgOpa defaults to 0, so a theme that never asked for one is unchanged.
     uint32_t bg     = 0x000000;
     int      bgOpa  = 0;     // 0..255, 0 = no plate at all
-    int      radius = 4;     // corner rounding, px
+    int      radius = ORB_PX(4);     // corner rounding, px
     bool     curved    = false;
     int      curveR    = 0;
     float    arcDeg    = 0.0f;
@@ -1255,14 +1256,14 @@ struct Splash {
     // SplashText silently slid every value one place along: arcDeg's 0.0f landed on an int
     // and only a narrowing warning caught it. The next field added would not have been so
     // lucky, and a colour quietly becoming an alignment is not a compiler's problem.
-    SplashText version{ .x = 233, .y = 353, .size = 14, .color = 0xFFFFFF, .opa = 255 };
-    SplashText network{ .x = 233, .y = 385, .size = 14, .color = 0x6A7078, .opa = 255 };
-    SplashText credits{ .x = 233, .y = 419, .size = 12, .color = 0x6A7078, .opa = 255 };
+    SplashText version{ .x = ORB_PX(233), .y = ORB_PX(353), .size = ORB_PX(14), .color = 0xFFFFFF, .opa = 255 };
+    SplashText network{ .x = ORB_PX(233), .y = ORB_PX(385), .size = ORB_PX(14), .color = 0x6A7078, .opa = 255 };
+    SplashText credits{ .x = ORB_PX(233), .y = ORB_PX(419), .size = ORB_PX(12), .color = 0x6A7078, .opa = 255 };
     // The theme's name and who made it, THEME_CAPS 35. UX-028 lists this beside the version
     // and the credits as what the splash must carry, and until now it carried neither. One
     // rung above the version in the same 32 px rhythm the other three keep, in the credits'
     // ink. Where it lands on a given theme's art is the designer's to settle, like the rest.
-    SplashText theme{ .x = 233, .y = 321, .size = 12, .color = 0x6A7078, .opa = 255 };
+    SplashText theme{ .x = ORB_PX(233), .y = ORB_PX(321), .size = ORB_PX(12), .color = 0x6A7078, .opa = 255 };
 };
 
 // The Headlines screen. The background can be a colour or a picture, and the picture
@@ -1317,7 +1318,7 @@ struct Intel {
     bool     briefColorOn = false;  // false: follow the headline colour
     uint32_t briefColor   = 0xE8ECF1;
     int      briefOpa     = 255;
-    int      briefGap     = 18;     // between the heading and the body
+    int      briefGap = ORB_PX(18);     // between the heading and the body
     // THEME_CAPS 49. The body's own size from the compiled ladder, read only when the theme
     // shipped no font_intel_brief.bin; 0 means the credit's face and size, which is what
     // every theme before this level gets.
@@ -1331,14 +1332,14 @@ struct Intel {
     // button at the foot of the band, the story's chevron between the story and the button.
     // Screen coordinates, the centre of the thing, like every other placed element here.
     bool     morePlace      = false;
-    int      moreX          = 233;
-    int      moreY          = 400;
+    int      moreX = ORB_PX(233);
+    int      moreY = ORB_PX(400);
     bool     backPlace      = false;
-    int      backX          = 233;
-    int      backY          = 370;
+    int      backX = ORB_PX(233);
+    int      backY = ORB_PX(370);
     bool     briefMorePlace = false;
-    int      briefMoreX     = 233;
-    int      briefMoreY     = 340;
+    int      briefMoreX = ORB_PX(233);
+    int      briefMoreY = ORB_PX(340);
     // How many headlines to FETCH, 1..INTEL_MAX_ITEMS (20). Not the same question as how
     // many are on screen: the surplus is what the knob scrolls through.
     int      count       = 3;
@@ -1369,7 +1370,7 @@ struct Intel {
     // [140, 400] on the way in: below 140 an outer row's chord can hit zero or go
     // imaginary, and above 400 the curve is imperceptible within the rows' actual height
     // range, so it stops being worth the field.
-    int      curveRadius  = 233;
+    int      curveRadius = ORB_PX(233);
 
     // THEME_CAPS 11 below here. Every default reproduces the fixed layout this screen
     // shipped with, byte for byte, so a theme that never touches these looks identical.
@@ -1380,9 +1381,9 @@ struct Intel {
     // every Studio text field uses; the view subtracts the centre itself.
     char     title[24]    = "INTEL";
     bool     titleShow    = true;
-    int      titleSize    = 14;    // one of the compiled Montserrat sizes: 12/14/16/18/20/28
-    int      titleX       = 233;
-    int      titleY       = 65;    // 233 - 168, the fixed layout's exact spot
+    int      titleSize = ORB_PX(14);    // one of the compiled Montserrat sizes: 12/14/16/18/20/28
+    int      titleX = ORB_PX(233);
+    int      titleY = ORB_PX(65);    // 233 - 168, the fixed layout's exact spot
     // Headline type size. 0 means automatic, which is the original behaviour: 16 px for
     // three or fewer, 14 px for four or five. Any other value must be a compiled size
     // (see FONT_SIZES in theme_style.cpp, which mirrors lv_conf.h exactly); the parser
@@ -1393,8 +1394,8 @@ struct Intel {
     // fixed layout's 330 px column. Asymmetric margins move the block as well as size it,
     // which is the point: "where I want to put it" and "how much room it takes up" are
     // the same two numbers. The curved boundary, when on, intersects with this box.
-    int      marginLeft   = 68;
-    int      marginRight  = 68;
+    int      marginLeft = ORB_PX(68);
+    int      marginRight = ORB_PX(68);
     // The band the headline block is allowed to occupy, px in from the top and bottom of
     // the dial. 0 means "work it out", which keeps the old behaviour: the block is bounded
     // by the title above and the age line below. Above 0 these win, so a design can hold
@@ -1423,7 +1424,7 @@ struct Intel {
     // descenders of g and y ran straight into the credit line. Whether 2 px is enough is a
     // question about the TYPEFACE, so it cannot be a constant. 2 is the default, so a theme
     // that says nothing is laid out exactly as before. Clamped [0, 24].
-    int      sourceGap    = 2;
+    int      sourceGap = ORB_PX(2);
     // THEME_CAPS 20. Which edge a headline and its credit line up on: 0 left, 1 centre,
     // 2 right. Both default to centre, which is what this screen drew from the beginning.
     // They are separate settings because a credit set flush right under a left-aligned
@@ -1458,8 +1459,8 @@ struct Intel {
     // theme is unchanged. It still switches to staleColor when the headlines go stale —
     // that flip is the line's whole reason to exist and no colour choice removes it.
     bool     ageShow      = true;
-    int      ageX         = 233;
-    int      ageY         = 409;   // 233 + 176, the fixed layout's exact spot
+    int      ageX = ORB_PX(233);
+    int      ageY = ORB_PX(409);   // 233 + 176, the fixed layout's exact spot
     // What the age line SAYS, with {t} standing in for the phrase the Orb works out
     // ("just now", "5 min ago", "2 hr ago"). The default is the bare token, which is
     // exactly what this line has always printed. A theme can write "Last updated: {t}" or
@@ -1468,11 +1469,11 @@ struct Intel {
     // allowed on the grounds that someone may genuinely want one.
     // The credit under each headline ("BBC", "NASA"). It had no size of its own and was
     // welded to 12 px, which is fine beside 16 px text and invisible beside 40 px.
-    int      sourceSize   = 12;
+    int      sourceSize = ORB_PX(12);
     char     ageFmt[40]   = "{t}";
     uint32_t ageColor     = 0x5F6874;
     int      ageOpa       = 255;   // 0..255, see THEME_CAPS 18
-    int      ageSize      = 12;    // one of the compiled Montserrat sizes
+    int      ageSize = ORB_PX(12);    // one of the compiled Montserrat sizes
     int      ageGlow      = 0;     // px of halo, 0 = none, clamped to [0, 20]
     uint32_t ageGlowColor = 0x5F6874;
     // Bend the line along an arc, the way the clock's banners and the scope's readouts can.
@@ -1484,8 +1485,8 @@ struct Intel {
     // The plate behind it, THEME_CAPS 33, on the same control every other line of text has.
     uint32_t ageBg     = 0x000000;
     int      ageBgOpa  = 0;    // 0..255, 0 = none
-    int      ageRadius = 4;
-    int      ageCurveR    = 176;    // px from the dial centre
+    int      ageRadius = ORB_PX(4);
+    int      ageCurveR = ORB_PX(176);    // px from the dial centre
     float    ageArcDeg    = 180.0f; // clock angle the text is centred on; 180 = six o'clock
 };
 
